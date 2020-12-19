@@ -1,19 +1,5 @@
-# ahapocket_manage
+# Aha口袋管理系统
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 1.0.0 
+time: 2020/12/19
+主要内容：初版架构
