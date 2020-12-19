@@ -25,10 +25,10 @@
 </template>
 
 <script>
-import Loading from './components/Loading';
-import LeftNav from './components/LeftNav';
-import TopNav from './components/TopNav';
-import { getMe,getComps } from '@/assets/axios/api.js';
+import Loading from './components/Loading'
+import LeftNav from './components/LeftNav'
+import TopNav from './components/TopNav'
+import { getMe,getComps } from '@/assets/axios/api.js'
 
 export default {
 	created() {
@@ -52,7 +52,7 @@ export default {
 		LeftNav,
 		TopNav
 	}
-};
+}
 </script>
 
 <style lang="stylus">
