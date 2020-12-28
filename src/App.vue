@@ -8,7 +8,7 @@
 		<el-container v-else-if="$route.meta.alone">
 			<router-view/>
 		</el-container>
-		<el-container v-else>
+		<el-container v-else-if="$store.state.token">
 			<el-header>
 				<TopNav></TopNav>
 			</el-header>
@@ -43,7 +43,7 @@ export default {
 			})
 			getComps()
 			.then(res => {
-				this.$store.state.compList = res.data;
+				this.$store.state.arr_competions = res.data;
 			})
 		}
 	},
@@ -58,10 +58,11 @@ export default {
 <style lang="stylus">
 @import './assets/common.styl'
 
-.el-header
-	padding 0
-.el-aside
-	height calc(100vh - 60px)
-.el-main
-	height calc(100vh - 60px)
+#app
+	.el-header
+		padding 0
+	.el-aside
+		height calc(100vh - 60px)
+	.el-main
+		height calc(100vh - 60px)
 </style>

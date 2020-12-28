@@ -80,7 +80,7 @@
 			</el-form-item>
 			<!-- 用户简历 -->
 			<el-form-item label="用户简历">
-				<router-link class="link-resume" :to="'/resume/'+userInfo.id">查看用户简历</router-link>
+				<a class="link-resume" :href="'http://localhost:8081/resume/'+userInfo.id" target="_blank">查看用户简历</a>
 			</el-form-item>
 			<!-- 按键 -->
 			<el-form-item>
@@ -102,7 +102,7 @@
 					:disabled="!allowEdit"
 					@change="setUserRole">
 				    <el-option
-				      v-for="item in roles"
+				      v-for="item in arr_roles"
 				      :key="item"
 				      :label="item"
 				      :value="item">
@@ -114,13 +114,13 @@
 				{{userInfo.phone || "未绑定"}}
 			</el-form-item>
 			<!-- 余额 -->
-			<el-form-item label="余额">
-				<strong>100元</strong>
+			<el-form-item label="Aha币">
+				<strong>100</strong>
 			</el-form-item>
 			<!-- 贡献点 -->
-			<el-form-item label="贡献点">
+			<el-form-item label="Aha点">
 				<strong>{{userInfo.contribPoint}}</strong>
-				<span class="give-point">发放贡献点</span>
+				<span class="give-point">Aha点调整</span>
 			</el-form-item>
 			<!-- 协议签署 -->
 			<el-form-item label="协议状态">
@@ -146,14 +146,39 @@
 			</el-form-item>
 		</el-form>
 		<!-- 活跃程度 -->
-		<el-form label-width="80px">
+		<el-form>
 			<h2 class="center">用户活跃程度</h2>
-			
+			<div class="charts" ref="liveness"></div>
 		</el-form>
 		<!-- 用户消费记录 -->
-		<el-form label-width="80px">
+		<el-form 
+			class="expense" 
+			label-width="80px"
+			:infinite-scroll-disabled="is_loadAllExpense || is_loadingExpense"
+			v-infinite-scroll="loadExpense"
+			infinite-scroll-distance=30>
 			<h2 class="center">用户消费记录</h2>
-			
+			<div 
+				class="expense-card"
+				v-for="(expense,index) in arr_expense"
+				:key="index">
+				<el-row class="header">
+				  <el-col class="order-number" :span="20">订单号: {{expense.orderNumber}}</el-col>
+				  <el-col class="time" :span="4">{{expense.time}}</el-col>
+				</el-row>
+				<el-row class="main">
+					<el-col class="left" :span="20">
+						<div class="desc">{{expense.type}} - {{expense.describe}}</div>
+						<div class="commodity">相关商品：<strong>{{expense.commodity}}</strong></div>
+						<div class="type"></div>
+					</el-col>
+					<el-col class="right" :span="4">
+						<h1 class="amount">{{expense.amount > 0 ? "+"+expense.amount : expense.amount}}</h1>
+						<div class="payWay">{{expense.payWay}}</div>
+					</el-col>
+				</el-row>
+			</div>
+			<p class="center remark">{{is_loadAllExpense ? "已加载全部" : ""}}</p>
 		</el-form>
 		<SendInform 
 			v-if="isSendInform"
@@ -172,11 +197,22 @@ export default{
 		return {
 			allowEdit: false,
 			userInfo: null,
-			contarctImg: "",
-			inputVisible: false,
-			inputValue: "",
-			roles: ["ROLE_USER","ROLE_ADMIN"],
-			isSendInform: false
+			contarctImg: "", //合同图片
+			inputVisible: false,// 是否可输入标签
+			inputValue: "", //标签输入内容
+			arr_roles: ["ROLE_ADMIN","ROLE_SUPERADMIN"],//身份数组
+			isSendInform: false,
+			pageNum_expense: 1,
+			pageSize_expense: 5,
+			is_loadingExpense: false,
+			is_loadAllExpense: true,
+			arr_expense: [
+				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
+				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
+				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
+				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
+				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"}
+			]
 		}
 	},
 	computed: {
@@ -194,6 +230,12 @@ export default{
 	watch: {
 		"$route": "initData"
 	},
+	components: {
+		SendInform
+	},
+	created() {
+		this.initData()
+	},
 	methods: {
 		/* 初始化数据 */
 		initData()
@@ -208,6 +250,8 @@ export default{
 				if(this.$store.state.myInfo.userInfo.userId == this.$route.params.id){
 					this.allowEdit = true
 				}
+				/* 绘制图表 */
+				this.$nextTick(this.initLiveness)
 			})
 		},
 		/* 获取合同图片,预先判断是否签署 */
@@ -358,13 +402,97 @@ export default{
 			.catch(err => {
 				this.isSendInform = false
 			})
+		},
+		/* 初始化用户活跃度 */
+		initLiveness()
+		{
+			/* 请求数据 */
+			/* 绘图 */
+			const option = {
+				tooltip: {
+					trigger: 'axis'
+				},
+				dataZoom: [
+					{
+						start: 50,
+						minSpan: 50
+					}, 
+					{
+						type: 'inside'
+					},
+				],
+				legend: {
+					data: ['登录次数', "邀请好友数量","反馈问题数量" ,'项目数量', '比赛数量', '外包数量']
+				},
+				grid: {
+					left: '3%',
+					right: '3%',
+					bottom: '50px',
+					containLabel: true
+				},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+					data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+				},
+				yAxis: {
+					type: 'value'
+				},
+				series: [
+					{
+						name: '登录次数',
+						type: 'line',
+						data: [120, 132, 101, 134, 90, 230, 210]
+					},
+					{
+						name: '邀请好友数量',
+						type: 'line',
+						data: [220, 182, 191, 234, 290, 330, 310]
+					},
+					{
+						name: '反馈问题数量',
+						type: 'line',
+						data: [150, 232, 201, 154, 190, 330, 410]
+					},
+					{
+						name: '项目数量',
+						type: 'line',
+						data: [320, 332, 301, 334, 390, 330, 320]
+					},
+					{
+						name: '比赛数量',
+						type: 'line',
+						data: [820, 932, 901, 934, 1290, 1330, 1320]
+					},
+					{
+						name: '外包数量',
+						type: 'line',
+						data: [820, 932, 901, 934, 1290, 1330, 1320]
+					}
+				]
+			};
+			let chart = this.Echarts.init(this.$refs.liveness)
+			chart.setOption(option)
+		},
+		/* 加载订单信息 */
+		loadExpense()
+		{
+			console.log(1);
+			if(!this.is_loadAllExpense){
+				this.is_loadingExpense = true
+				this.$store.commit("setLoading",true)
+				/* 请求数据 */
+				setTimeout(() => {
+					this.arr_expense.push(...this.arr_expense)
+					this.pageNum_expense++
+					if(this.pageNum_expense >= 3){
+						this.is_loadAllExpense = true
+					}
+					this.is_loadingExpense = false
+					this.$store.commit("setLoading",false)
+				},2000)
+			}
 		}
-	},
-	created() {
-		this.initData()
-	},
-	components: {
-		SendInform
 	}
 }
 </script>
@@ -376,7 +504,7 @@ export default{
 	grid-gap 10px
 	.el-form
 		padding 10px
-		background-color rgba(64,158,255,0.04)
+		background-color rgba(64,158,255,0.07)
 		border-radius 8px
 		box-shadow var(--shadow1)
 		h2
@@ -384,6 +512,9 @@ export default{
 		.check-file
 			margin-left calc(50% - 30px)
 			display inline-block
+		.charts
+			width 100%
+			height 400px
 		.el-form-item
 			margin 5px 0
 			.el-input
@@ -411,4 +542,35 @@ export default{
 				color var(--blue)
 				text-decoration underline
 				cursor pointer
+	/* 账单 */
+	.expense
+		height 461px
+		overflow auto
+		.expense-card
+			margin-bottom 10px
+			border-radius var(--radius2)
+			box-shadow var(--shadow1)
+			overflow hidden
+			.el-row
+				padding 10px
+			.header
+				background-color var(--origin2)
+				color #FFFFFF
+				.time
+					text-align right
+			.main
+				background-color #FFFFFF
+				.left
+					.desc
+						color var(--origin1)
+				.right
+					text-align center
+					.amount
+						color var(--red)
+					.payWay
+						font-size 12px
+						color var(--gray)
+		.remark
+			font-size 12px
+			color var(--gray)
 </style>

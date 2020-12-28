@@ -1,30 +1,31 @@
+import Vue from 'vue'
 import { MessageBox,Message } from "element-ui"
 
-export function showSuccess(msg){
+Vue.prototype.$showSuccess = (msg,duration=2000) => {
 	Message({
 		message: msg,
 		type: 'success',
-		duration: 2000
+		duration
 	})
 }
 
-export function showWarn(msg){
+Vue.prototype.$showWarn = (msg,duration=2000) => {
 	Message({
 		message: msg,
 		type: 'warning',
-		duration: 2000
+		duration
 	})
 }
 
-export function showError(msg){
+Vue.prototype.$showError = (msg,duration=2000) => {
 	Message({
 		message: msg,
 		type: 'error',
-		duration: 2000
+		duration
 	})
 }
 
-export function confirm(msg,success){
+Vue.prototype.$confirm = (msg,success) => {
 	MessageBox.confirm(msg,"提示",{
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
@@ -40,25 +41,26 @@ export function confirm(msg,success){
 	input: Date
 	return: String
 */
-export function gformatDate(time){
+Vue.prototype.gformatDate = (time,breakLine=false) => {
 	const date = new Date(time)
-	const year = date.getFullYear()
-	const month = date.getMonth() + 1
-	const day = date.getDate()
+	const year = date.getFullYear() 
+	const month = date.getMonth() + 1 
+	const day = date.getDate() 
 	const hour = date.getHours()
-	const minutes = date.getMinutes()
+	const minutes = date.getMinutes() 
 	
 	const nDay = new Date()
 	const nyear = nDay.getFullYear()
 	const nmonth = nDay.getMonth() + 1
 	const nday = nDay.getDate()
+	if(breakLine){
+		return `${year < 10 ? '0'+year : year}/${month < 10 ? '0'+month : month}/${day < 10 ? '0'+day : day}\n${hour < 10 ? '0'+hour : hour}:${minutes < 10 ? '0'+minutes : minutes}`
+	}
 	if(year === nyear && month === nmonth && day === nday){
-		return `${hour}:${minutes}`
+		`${hour < 10 ? '0'+hour : hour}:${minutes < 10 ? '0'+minutes : minutes}`
 	}
-	else if(year === nyear){
-		return `${month}/${day} ${hour}:${minutes}`
+	if(year === nyear){
+		return `${month < 10 ? '0'+month : month}/${day < 10 ? '0'+day : day} ${hour < 10 ? '0'+hour : hour}:${minutes < 10 ? '0'+minutes : minutes}`
 	}
-	else{
-		return `${year}/${month}/${day} ${hour}:${minutes}`
-	}
+	return `${year < 10 ? '0'+year : year}/${month < 10 ? '0'+month : month}/${day < 10 ? '0'+day : day} ${hour < 10 ? '0'+hour : hour}:${minutes < 10 ? '0'+minutes : minutes}`
 }

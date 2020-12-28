@@ -1,7 +1,7 @@
 <template>
 	<div class="login">
 		<h1>管理员登录</h1>
-		<el-form ref="loginForm" label-width="60px" :rules="phoneRule" :model="loginFrom">
+		<el-form ref="loginForm" label-width="60px" :rules="Rules" :model="loginFrom">
 			<el-form-item label="手机" prop="phone"><el-input type="phone" v-model="loginFrom.phone" autocomplete="off"></el-input></el-form-item>
 			<el-form-item label="密码" prop="password"><el-input type="password" v-model="loginFrom.password" autocomplete="off"></el-input></el-form-item>
 			<el-button type="primary" @click="Login">登录</el-button>
@@ -19,12 +19,16 @@ export default {
 			} 
 			else {
 				const reg = /^1[3|4|5|7|8][0-9]\d{8}$/;
-				if (reg.test(value)) callback();
-				else return callback(new Error('手机号格式错误'));
+				if (reg.test(value)){
+					callback();
+				} 
+				else {
+					return callback(new Error('手机号格式错误'));
+				} 
 			}
 		};
 		return {
-			phoneRule: {
+			Rules: {
 				phone: [{ validator: checkPhone }],
 				password: [{ required: true, message: '密码不能为空' }]
 			},

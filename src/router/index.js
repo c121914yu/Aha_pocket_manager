@@ -47,7 +47,6 @@ const routes = [{
 		path: '/resume/:id',
 		name: 'Resume',
 		meta: {
-			login: true,
 			alone: true
 		},
 		component: () => import('../views/Users/Resume.vue')
@@ -124,13 +123,10 @@ const router = new VueRouter({
 	routes
 })
 
-import {
-	showWarn
-} from "@/assets/js/globalFun.js"
 /* 路由守卫 */
 router.beforeEach((to, from, next) => {
 	if (to.meta.login && !sessionStorage.getItem("token")) {
-		showWarn("请先登录")
+		Vue.prototype.$showWarn("请先登录")
 		next({
 			path: "/"
 		})

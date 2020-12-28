@@ -6,12 +6,12 @@
 			label-width="80px"
 			:rules="rules"
 			:model="informInfo">
-			<h3 class="center">{{receiver.title}}</h3>
+			<h3 class="center">{{header}}</h3>
 			<el-form-item v-if="receiver.id" label="收件人ID" size="mini">
 				{{receiver.id}}
 			</el-form-item>
 			<el-form-item label="收件人" size="mini">
-				{{receiver.trueName || receiver.nickname}}
+				{{receiver.name}}
 			</el-form-item>
 			<el-form-item label="发件人" size="mini">管理员</el-form-item>
 			<el-form-item label="通知主题" prop="title">
@@ -36,6 +36,25 @@
 
 <script>
 export default{
+	props: {
+		header: {
+			type: String,
+			default: "消息通知"
+		},
+		receiver: {
+			type: Object,
+			default: () => {}
+		},
+		inform: {
+			type: Object,
+			default: () => {
+				return{
+					title: "",
+					content: ""
+				}
+			}
+		}
+	},
 	data(){
 		return{
 			informInfo: {
@@ -52,11 +71,8 @@ export default{
 			}
 		}
 	},
-	props: {
-		receiver: {
-			type: Object,
-			default: () => {}
-		}
+	created() {
+		this.informInfo = this.inform
 	},
 	methods:{
 		/* 发送信息 */
@@ -64,7 +80,7 @@ export default{
 		{
 			this.$refs.informForm.validate((valid) => {
 				if (valid) {
-					this.$confirm(`您即将发送通知给 ${this.receiver.trueName || this.receiver.nickname},请确认！`,() => {
+					this.$confirm(`您即将发送通知给 ${this.receiver.name},请确认！`,() => {
 						this.$emit("success",{
 							receiverUserId: this.receiver.id,
 							...this.informInfo
@@ -76,9 +92,6 @@ export default{
 				}
 			})
 		}
-	},
-	created() {
-		console.log(this.receiver);
 	}
 }
 </script>

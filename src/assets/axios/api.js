@@ -24,7 +24,7 @@ const putUserOpen = (userId,data) => PUT(`/admin/user/info/${userId}`,data)
 const putMe = (data) => PUT("/userInfo/me",data)
 /* 获取用户简历 */
 const getResume = (userId) => GET(`/resume/${userId}`,{})
-/* 向用户发送通知 */
+/* 向指定用户发送通知 */
 const sendInform = (data) => POST("/admin/message/systemPrivate",data)
 
 /* 获取项目列表 */
@@ -41,12 +41,25 @@ const checkProject = (projectId,data) => POST(`/admin/project/check/${projectId}
 /* 获取所有比赛 */
 const getComps = () => GET("/competition",{})
 /* 创建新比赛信息 */
-const postNewComp = (data) => POST("/admin/competition/tag",data)
+const postNewComp = (data) => POST("/admin/competition",data)
 /* 修改比赛信息 */
-const putComp = (data) => PUT(`/admin/competition/tag/${data.id}`,data)
+const putComp = (data) => PUT(`/admin/competition/${data.id}`,data)
 
 /* 获取消息列表 */
 const getMessages = (param) => GET("/message",param)
+/* 向全体用户发送通知 */
+const sendInform_all = (data) => POST("/admin/message/systemNotice",data)
+/* 获取系统公告 */
+const getNotices = (data) => GET("/admin/notice",data)
+/* 发布系统公告 */
+const sendNotice = (data) => POST("/admin/notice",data)
+/* 修改公告 */
+const putNotice = (data) => PUT(`/admin/notice/${data.id}`,data)
+
+/* 分页获取用户反馈 */
+const getFeedbacks = (param) => GET("/admin/feedback",param)
+/* 处理反馈 */
+const putFeedback = (data) => PUT(`/admin/feedback/${data.id}`,data)
 
 export {
 	upFile,
@@ -74,5 +87,12 @@ export {
 	postNewComp,
 	putComp,
 	
-	getMessages
+	getMessages,
+	sendInform_all,
+	getNotices,
+	sendNotice,
+	putNotice,
+	
+	getFeedbacks,
+	putFeedback
 }

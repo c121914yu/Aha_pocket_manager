@@ -9,6 +9,17 @@
 			<h2 class="center">发布系统公告</h2>
 			<el-form-item label="收件人" size="mini">全体成员</el-form-item>
 			<el-form-item label="发件人" size="mini">Aha口袋</el-form-item>
+			<el-form-item label="公告时间">
+				<el-date-picker
+					v-model="time"
+					type="datetimerange"
+					range-separator="-"
+					:clearable="false"
+					start-placeholder="开始日期"
+					end-placeholder="结束日期"
+					format="yyyy/MM/dd HH:mm">
+				</el-date-picker>
+			</el-form-item>
 			<el-form-item label="通知主题" prop="title">
 				<el-input v-model="notice.title" placeholder="请输入通知主题"></el-input>
 			</el-form-item>
@@ -21,6 +32,12 @@
 					v-model="notice.content">
 				</el-input>
 			</el-form-item>
+			<el-form-item label="是否启用">
+				<el-radio-group v-model="notice.enable">
+					<el-radio :label="true">启用</el-radio>
+					<el-radio :label="false" fill="#F56C6C">禁用</el-radio>
+				</el-radio-group>
+			</el-form-item>
 			<el-form-item class="btns">
 				<el-button class="sure" type="primary" plain @click="sure">确认</el-button>
 				<el-button class="cancel" type="info" @click="$emit('close')">取消</el-button>
@@ -31,11 +48,21 @@
 
 <script>
 export default{
+	props: {
+		noticeInfo: {
+			type: Object,
+			default: () => null
+		}
+	},
 	data(){
 		return{
+			time: [],
 			notice: {
 				title: "",
-				content: ""
+				content: "",
+				puttingStartTime: "",
+				puttingEndTime: "",
+				enable: true
 			},
 			rules: {
 				title: [
@@ -47,14 +74,22 @@ export default{
 			}
 		}
 	},
+	created() {
+		if(this.noticeInfo.hasOwnProperty("id")){
+			this.notice = {...this.noticeInfo}
+			this.time = [this.notice.puttingStartTime,this.notice.puttingEndTime]
+		}
+	},
 	methods:{
 		/* 确认发布 */
 		sure()
 		{
 			this.$refs.noticeForm.validate((valid) => {
 				if (valid) {
-					this.$confirm(`您将发布系统公告,请确认！`,() => {
-						console.log(this.notice);
+					this.$emit("success",{
+						...this.notice,
+						puttingStartTime: this.time[0],
+						puttingEndTime: this.time[1]
 					})
 				} 
 				else {
@@ -69,5 +104,7 @@ export default{
 <style lang="stylus" scoped>
 .send-notice
 	.content
-		width 400px
+		width 500px
+	.el-date-editor
+		width 100%
 </style>

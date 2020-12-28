@@ -5,15 +5,14 @@
 			class="btn-publish" 
 			type="primary" 
 			icon="el-icon-edit"
-			@click="is_sendNotice=true">
+			@click="is_editNotice=true">
 			发布系统公告
 		</el-button>
 		<el-table 
 			ref="table"
 			style="width: 100%"
 			stripe
-			:data="arr_notice"
-			@filter-change="fileterChange">
+			:data="arr_notice">
 			<el-table-column
 				label="ID"
 				width="100"
@@ -21,11 +20,27 @@
 				align="center">
 			</el-table-column>
 			<el-table-column
-				label="发布时间"
-				prop="time"
+				label="创建时间"
+				prop="createTime"
 				align="center">
 				<template slot-scope="scope">
-					<div class="create-time" v-html="scope.row.time"></div>
+					<div class="time" v-html="gformatDate(scope.row.createTime,true)"></div>
+				</template>
+			</el-table-column>
+			<el-table-column
+				label="开始时间"
+				prop="puttingStartTime"
+				align="center">
+				<template slot-scope="scope">
+					<div class="time" v-html="gformatDate(scope.row.puttingStartTime,true)"></div>
+				</template>
+			</el-table-column>
+			<el-table-column
+				label="结束时间"
+				prop="puttingEndTime"
+				align="center">
+				<template slot-scope="scope">
+					<div class="time" v-html="gformatDate(scope.row.puttingEndTime,true)"></div>
 				</template>
 			</el-table-column>
 			<el-table-column
@@ -41,88 +56,98 @@
 				</template>
 			</el-table-column>
 			<el-table-column
-				label="阅读人数"
-				align="center"
-				prop="readUser">
+				label="是否启用"
+				prop="enable"
+				align="center">
+				<template slot-scope="scope">
+					<i v-if="scope.row.enable" class="icon success el-icon-success"></i>
+					<i v-else class="icon none el-icon-error"></i>
+				</template>
 			</el-table-column>
 			<el-table-column 
 				label="操作"
 				align="center">
 				<template slot-scope="scope">
-					<el-button type="danger" size="mini">删除</el-button>
+					<el-button type="primary" size="mini" @click="inEdit(scope.row)">Edit</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
-		<p 
-			class="show-remind center"
-			:style="{
-				cursor: isShowAll ? 'default' : 'pointer'
-			}">
-			{{isShowAll ? "已加载全部" : "点击加载更多"}}
-		</p>
 	
 		<IntroCard v-if="showIntro" title="公告内容" :html="showIntro" @close="showIntro=''"></IntroCard>
-		<SendInform 
-			v-if="is_sendNotice" 
-			:receiver="obj_receiver" 
-			@close="is_sendNotice=false" 
-			@success="sendNotice"></SendInform>
+		<EditNotice
+			v-if="is_editNotice" 
+			:noticeInfo="noticeInfo"
+			@close="is_editNotice=false" 
+			@success="editNotice">
+		</EditNotice>
 	</div>
 </template>
 
 <script>
-import { getMessages } from "@/assets/axios/api.js"
+import { getNotices,sendNotice,putNotice } from "@/assets/axios/api.js"
 import IntroCard from "@/components/IntroCard/IntroCard.vue"
-import SendInform from "@/components/SendInform/SendInform.vue"
+import EditNotice from "@/components/EditNotice/EditNotice.vue"
 export default{
 	data(){
 		return{
 			searchText: "",
 			sortBy: null,
 			orderBy: null,
-			pageNum: 1,
-			pageSize: 30,
-			isShowAll: false,
-			arr_notice: [
-				{id:1,time:"2020/5/5\n20:10",title:"系统维护",content:"adgfdas搭嘎撒多多所多所所",readUser:50},
-				{id:2,time:"2020/5/4\n20:10",title:"系统维护",content:"adgfdas搭嘎撒多多所多所所",readUser:100},
-				{id:3,time:"2020/5/5\n10:10",title:"系统维护",content:"adgfdas搭嘎撒多多所多所所",readUser:230},
-				{id:4,time:"2020/5/2\n20:10",title:"系统维护",content:"adgfdas搭嘎撒多多所多所所",readUser:22},
-			],
+			arr_notice: [],
 			showIntro: "",
-			is_sendNotice: false,
-			obj_receiver: {
-				title: "发布系统公告",
-				trueName: "全体成员"
-			}
+			noticeInfo: {},
+			is_editNotice: false,
 		}
 	},
 	components: {
 		IntroCard,
-		SendInform
+		EditNotice
 	},
 	created() {
+		this.getNoticesInfo()
 	},
 	methods:{
-		/* 发布系统公告 */
-		sendNotice(e)
+		/* 获取 */
+		getNoticesInfo()
 		{
-			console.log(e);
-			this.is_sendNotice = false
+			getNotices()
+			.then(res => {
+				this.arr_notice = res.data
+				console.log(this.arr_notice)
+			})
 		},
-		/* 筛选改变 */
-		fileterChange(filters)
+		/* 进入编辑 */
+		inEdit(notice)
 		{
-			for(let key in filters){
-				const res = filters[key]
-				if(res.length === 0)
-					this[key] = null
-				else
-					this[key] = res[0]
+			this.noticeInfo = notice
+			this.is_editNotice = true
+		},
+		/* 发布系统公告 */
+		editNotice(e)
+		{
+			if(this.noticeInfo.id){
+				this.$confirm(`您将修改系统公告,请确认！`,() => {
+					putNotice(e)
+					.then(res => {
+						this.$showSuccess("修改公告成功")
+						this.is_editNotice = false
+						this.noticeInfo = {}
+						this.getNoticesInfo()
+					})
+				})
+			}
+			else{
+				this.$confirm(`您将发布系统公告,请确认！`,() => {
+					sendNotice(e)
+					.then(res => {
+						this.$showSuccess("发布公告成功")
+						this.is_editNotice = false
+						this.getNoticesInfo()
+					})
+				})
 			}
 		}
 	},
-	
 }
 </script>
 
@@ -136,15 +161,12 @@ export default{
 		position absolute
 		top 0
 		right 0
-	.create-time
+	.time
 		white-space pre-line
-	.add-btn
-		position absolute
-		right 0
-		top 0
-	.show-remind
-		margin-top 10px
-		color var(--gray)
-	.table-icon
-		font-size 1.4em
+	.icon
+		font-size 20px
+		&.success
+			color var(--green)
+		&.none
+			color var(--gray)
 </style>

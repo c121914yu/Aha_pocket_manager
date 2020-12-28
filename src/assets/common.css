@@ -90,6 +90,11 @@ a {
 .el-icon-circle-close {
   color: #fff;
 }
+/* 备注信息 */
+.remark {
+  color: var(--gray);
+  font-size: 12px;
+}
 /* 全局弹窗样式 */
 .popup {
   z-index: 10;

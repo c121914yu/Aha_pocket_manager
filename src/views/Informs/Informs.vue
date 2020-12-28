@@ -1,6 +1,13 @@
 <template>
 	<div class="informs">
 		<h1>通知管理</h1>
+		<el-button
+			class="btn-publish" 
+			type="primary" 
+			icon="el-icon-edit"
+			@click="is_sendInform=true">
+			发送全体通知
+		</el-button>
 		<el-table 
 			ref="table"
 			style="width: 100%"
@@ -71,18 +78,19 @@
 			class="show-remind center"
 			:style="{
 				cursor: isShowAll ? 'default' : 'pointer'
-			}"
-			@click="handleShowMore">
+			}">
 			{{isShowAll ? "已加载全部" : "点击加载更多"}}
 		</p>
 	
+		<SendInform v-if="is_sendInform" :receiver="receiver" @close="is_sendInform=false" @success="sendInform"></SendInform>
 		<IntroCard v-if="showIntro" title="通知内容" :html="showIntro" @close="showIntro=''"></IntroCard>
 	</div>
 </template>
 
 <script>
-import { getMessages } from "@/assets/axios/api.js"
+import { getMessages,sendInform_all } from "@/assets/axios/api.js"
 import IntroCard from "@/components/IntroCard/IntroCard.vue"
+import SendInform from "@/components/SendInform/SendInform.vue"
 export default{
 	data(){
 		return{
@@ -92,11 +100,14 @@ export default{
 			pageSize: 30,
 			isShowAll: false,
 			informs: [],
-			showIntro: ""
+			showIntro: "",
+			receiver: {title:'发送全体通知',trueName:'全体成员'},
+			is_sendInform: false
 		}
 	},
 	components: {
-		IntroCard
+		IntroCard,
+		SendInform
 	},
 	created() {
 		this.getMessagesList()
@@ -140,18 +151,19 @@ export default{
 					this[key] = res[0]
 			}
 		},
-		/*
-			name: handleShowMore
-			desc: 如果没有加载全部，则继续加载
-			time: 2020/11/29
-		*/
-		handleShowMore()
+		/* 发送全体通知 */
+		sendInform(e)
 		{
-			if(this.isShowAll){
-				return
-			}
-			this.getProjectsData()
-		},
+			sendInform_all({
+				title: e.title,
+				content: e.content,
+				type: 0, // 0管理员通知，1审核结果，2私信
+			})
+			.then(res => {
+				this.$showSuccess("发送成功")
+				this.is_sendInform = false
+			})
+		}
 	},
 	
 }
@@ -163,6 +175,10 @@ export default{
 	h1
 		margin-bottom 10px
 		color var(--blue)
+	.btn-publish
+		position absolute
+		top 0
+		right 0
 	.create-time
 		white-space pre-line
 	.add-btn

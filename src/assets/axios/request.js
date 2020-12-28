@@ -1,6 +1,6 @@
 import axios from 'axios'
 import store from "@/store"
-import { showError } from "@/assets/js/globalFun.js"
+import Vue from 'vue'
 
 const closeLoad = () => {
 	setTimeout(() => {
@@ -30,11 +30,11 @@ const error = async (err) => {
 			store.commit("logOut")
 		}
 		closeLoad()
-		showError(err.response.data.msg)
+		Vue.prototype.$showError(err.response.data.msg)
 		return Promise.reject(err.response.data)
-  }
+	}
 	closeLoad()
-	showError("未知错误")
+	Vue.prototype.$showError("未知错误")
 	return Promise.reject(err)
 }
 

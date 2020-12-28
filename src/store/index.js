@@ -23,7 +23,21 @@ export default new Vuex.Store({
 		{label: "校二",value:22},
 		{label: "校三",value:21},
 		{label: "参与奖",value:10},
-	]
+	],
+	compType: [
+		{label: "经济类",value: 1},
+		{label: "管理类",value: 2},
+		{label: "法学类",value: 3},
+		{label: "公管类",value: 4},
+		{label: "语言类",value: 5},
+		{label: "艺术传媒类",value: 6},
+		{label: "学科类",value: 7},
+		{label: "计算机类",value: 8},
+		{label: "机械类",value: 9},
+		{label: "建筑类",value: 10},
+		{label: "化工类",value: 11},
+		{label: "科研创业类",value: 12},
+	],
   },
   mutations: {
     setLoading(state,type){
@@ -33,7 +47,7 @@ export default new Vuex.Store({
 		state.token = token
 		state.myInfo = personalUserInfo
 		sessionStorage.setItem("token",token)
-		router.push("/users")
+		router.push("/projects")
     },
 	logOut(state){
 		state.token = ""

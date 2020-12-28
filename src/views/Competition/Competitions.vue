@@ -20,12 +20,6 @@
 				align="center">
 			</el-table-column>
 			<el-table-column
-				label="compTagId"
-				align="center"
-				width="100"
-				prop="compTagId">
-			</el-table-column>
-			<el-table-column
 				label="比赛名称"
 				align="center"
 				prop="name">
@@ -33,7 +27,7 @@
 			<el-table-column
 				label="比赛分类"
 				align="center"
-				prop="name">
+				prop="competitionType.name">
 			</el-table-column>
 			<el-table-column
 				label="比赛介绍"
@@ -51,7 +45,7 @@
 						v-model="searchText"/>
 				</template>
 				<template slot-scope="scope">
-					<el-button size="mini" @click="editComp(scope.row)">Edit</el-button>
+					<el-button size="mini" @click="EditType=1;competition={...scope.row,type:scope.row.competitionType.id}">Edit</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -95,31 +89,10 @@ export default{
 			this.competition = null
 			getComps()
 			.then(res => {
-				this.$store.state.compList = res.data
+				this.$store.state.arr_competions = res.data
 				this.competitions = res.data
 				console.log(res.data);
 			})
-		},
-		/* 
-			name: 点击编辑比赛
-			desc: 点击编辑比赛，获取点击比赛的信息，传入比赛编辑弹窗
-		*/
-		editComp(e)
-		{
-			this.EditType = 1
-			this.competition = {...e}
-			console.log(e);
-		},
-		/* 
-			name: handleShowMore
-			desc: if not showAll,request more users data
-			time: 2020/11/29
-		*/
-		handleShowMore()
-		{
-			if(this.isShowAll)
-				return
-			this.getProjectsData()
 		},
 	}
 }

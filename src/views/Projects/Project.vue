@@ -3,7 +3,7 @@
 		<!-- 项目信息 -->
 		<el-form label-width="80px">
 			<!-- 头像 -->
-			<div class="center" v-if="project.avatarUrl">
+			<div class="center">
 				<el-image
 					style="width: 100px;"
 					:src="project.avatarUrl"
@@ -34,14 +34,19 @@
 				</span>
 			</el-form-item>
 			<el-form-item label="综合得分">
-				<span style="color: var(--red)">
-					<i class="el-icon-star-on"></i>
-					{{project.collect}}
-				</span>
+				<el-rate
+				  style="line-height: 2.5;"
+				  disabled
+				  show-score
+				  text-color="#ff9900"
+				  disabled-void-color="#e0e0e0"
+				  score-template="{value}"
+				  v-model="project.collect">
+				</el-rate>
 			</el-form-item>
-			<el-form-item label="参赛信息">
-				{{project.awardTime}},{{awardLevel}}: 
+			<el-form-item v-if="project.compName" label="参赛信息">
 				<!-- 如果是已有比赛则直接展示，如果是新比赛，则显示为输入框以确认新比赛的正确名称 -->
+				{{project.awardTime}},{{awardLevel}}: 
 				<strong v-if="project.compId>0">{{project.compName}}</strong>
 				<strong
 					v-else
@@ -50,7 +55,10 @@
 					{{project.compName}}
 				</strong>
 			</el-form-item>
-			<el-form-item style="margin-top: 10px;" label="获奖证明">
+			<el-form-item v-else label="参赛信息">
+				无参赛信息
+			</el-form-item>
+			<el-form-item v-if="project.compName" style="margin-top: 10px;" label="获奖证明">
 				<el-image
 					style="width: 100px;"
 					:src="project.awardProveUrl"
@@ -75,16 +83,12 @@
 					v-model.number="meaning">
 					<template slot="append">%</template>
 				</el-input>
+				<div class="remark">项目完整程度将影响发放给作者的Aha币,但不影响其标价。</div>
 			</el-form-item>
-			<el-form-item label="审核">
-				<el-input
-					class="cause" 
-					placeholder="项目拒绝的原因" 
-					v-model="cause">
-				</el-input>
+			<el-form-item class="check" label="审核">
 				<div class="btns">
-					<el-button type="success" @click="check(true)">通过</el-button>
-					<el-button type="danger" @click="check(false)">拒绝</el-button>
+					<el-button type="success" @click="openCheckProject(true)">通过</el-button>
+					<el-button type="danger" @click="openCheckProject(false)">拒绝</el-button>
 				</div>
 			</el-form-item>
 		</el-form>
@@ -185,20 +189,31 @@
 				</el-table-column>
 			</el-table>
 		</el-form>
+		
+		<!-- 拒绝项目，输入邮件内容 -->
+		<SendInform
+			v-if="inform.is_send"
+			:header="inform.header"
+			:receiver="inform.receiver"
+			:inform="inform.inform"
+			@close="inform.is_send=false"
+			@success="check">
+		</SendInform>
 		<!-- 比赛编辑 -->
 		<EditCompetition
-			v-if="competition"
-			:competitionInfo="competition" 
+			v-if="editCompetitionInfo"
+			:competitionInfo="editCompetitionInfo" 
 			:type="0"
-			@close="competition=null"
+			@close="editCompetitionInfo=null"
 			@finish="getProjectInfo">
 		</EditCompetition>
 	</div>
 </template>
 
 <script>
-import { getProject,getComments,getLoadSignature,checkProject } from "@/assets/axios/api.js"
+import { getProject,getComments,getLoadSignature,checkProject,sendInform } from "@/assets/axios/api.js"
 import EditCompetition from "@/components/EditCompetition/EditCompetition.vue"
+import SendInform from "@/components/SendInform/SendInform.vue"
 export default{
 	data(){
 		return{
@@ -210,23 +225,17 @@ export default{
 				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
 				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
 				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
-				{name: "余金隆",filename:"dsgsd.mp4",time:"2020/5/5 20:50",point: 50},
 			],
-			competition: null,
+			editCompetitionInfo: null,
 			meaning: 100,
-			cause: "",
+			checkRes: false,
+			inform: {
+				header: "",
+				receiver: null,
+				inform: null,
+				is_send: false
+			},
+			is_sendInform: false,
 			commentLoad: {
 				pageNum: 1,
 				pageSize: 20,
@@ -246,8 +255,9 @@ export default{
 		},
 		awardLevel(){
 			const level = this.$store.state.prizeLevels.find(item => item.value === this.project.awardLevel)
-			if(level)
+			if(level){
 				return level.label
+			}
 			return ""
 		}
 	},
@@ -256,16 +266,18 @@ export default{
 	},
 	components: {
 		EditCompetition,
+		SendInform
 	},
 	methods:{
 		/* 获取项目信息 */
 		getProjectInfo()
 		{
-			this.competition = null
 			getProject(this.$route.params.id)
 			.then(res => {
+				if(!res.data.avatarUrl){
+					res.data.avatarUrl = "https://aha-public.oss-cn-hangzhou.aliyuncs.com/AhaIcon/logo.png"
+				}
 				this.project = res.data
-				this.newCompName = this.project.compName
 				console.log(this.project);
 			})
 		},
@@ -289,15 +301,77 @@ export default{
 					this.pageNum++
 					this.commentLoad.showAll = false
 				}
-				this.comments =  this.comments.concat(res.data.pageData.map(comment => {
+				res.data.pageData.forEach(comment => {
 					const file = this.project.resources.find(item => item.id === comment.resourceId)
-					return{
-						...comment,
-						time: this.gformatDate(comment.time),
-						filename: file.name
-					}
-				}))
+					comment.time = this.gformatDate(comment.time)
+					comment.filename = file.name
+					this.comments.push(comment)
+				})
 				console.log(this.comments)
+			})
+		},
+		/* 添加新比赛 */
+		addComp()
+		{
+			this.editCompetitionInfo = {
+				name: this.project.compName,
+				intro: "",
+				type: "",
+				picUrl: null
+			}
+		},
+		/* 点击审核项目按键，调出发送通知按键 */
+		openCheckProject(bool)
+		{
+			if(this.project.compId === 0){
+				this.$showWarn("该比赛未在数据库中,请将该比赛信息录入数据库后再进行操作。",5000)
+				return
+			}
+			if(!this.meaning){
+				this.$showWarn("请正确填写项目完整度")
+				return
+			}
+			if(bool){
+				this.inform.header = "项目审核结果通知"
+				this.inform.inform = {
+					title: "项目审核 - 通过",
+					content: `恭喜你,你的项目<<${this.project.name}>>成功通过审核！评估完整度为: ${this.meaning}%。`
+				}
+			}
+			else{
+				this.inform.inform = {
+					title: "项目审核 - 未通过",
+					content: `很遗憾的告诉你,你的项目<<${this.project.name}>>未成功通过审核,原因如下:`
+				}
+			}
+			this.inform.receiver = {
+				id: this.project.creatorUser.userId,
+				name: this.project.creatorUser.nickname
+			}
+			this.checkRes = bool
+			this.inform.is_send = true
+		},
+		/* 审核项目 */
+		check(e)
+		{
+			checkProject(this.project.id,{
+				passed: this.checkRes,
+				meaning: this.meaning
+			})
+			.then(res => {
+				if(this.checkRes){
+					this.$showSuccess("已通过该项目")
+				}
+				else{
+					this.$showWarn("该项目未通过")
+				}
+				this.project.passed = this.checkRes
+				this.inform = {
+					header: "",
+					receiver: null,
+					inform: null,
+					is_send: false
+				}
 			})
 		},
 		/* 点击附件 */
@@ -308,36 +382,6 @@ export default{
 			.then(res => {
 				console.log(res.data.url);
 				window.open(res.data.url)
-			})
-		},
-		/* 添加新比赛 */
-		addComp()
-		{
-			this.competition = {
-				name: this.project.compName,
-				intro: "",
-				picUrl: null
-			}
-		},
-		/* 审批项目 */
-		check(bool)
-		{
-			const text = bool ? "通过" : "拒绝"
-			this.$confirm(`你即将 ${text} 该项目,请确认！`,() => {
-				checkProject(this.project.id,{
-					meaning: this.meaning,
-					passed: bool
-				})
-				.then(res => {
-					this.project.passed = bool
-					this.project.meaning = this.meaning
-					if(bool){
-						this.$showSuccess("项目已通过")
-					}
-					else{
-						this.$showError("已拒绝该项目")
-					}
-				})
 			})
 		},
 		/* 查看购买记录 */
@@ -366,6 +410,17 @@ export default{
 		.el-image
 			border-radius 4px
 			cursor pointer
+		.el-form-item
+			margin 5px 0
+			.new-compeition
+				color var(--red)
+				text-decoration underline
+				cursor pointer
+			.meaning
+				width 200px
+			&.check
+				.el-button
+					margin 0 15px 0 0
 		/* 附件信息 */
 		.file
 			margin-bottom 10px
@@ -378,24 +433,12 @@ export default{
 				line-height 1
 			span
 				margin-right 15px
-		.el-form-item
-			margin 5px 0
-			.new-compeition
-				color var(--red)
-				text-decoration underline
-				cursor pointer
-			
-			/* 项目意义输入框 */
-			.meaning
-				width 200px
-			.btns .el-button
-				margin 10px 20px 0 0
 		/* 介绍 */
 		.intro
 			margin auto
 			max-width 400px
 			max-height 80vh
-			overflow-y scroll
+			overflow-y auto
 		/* 评论 */
 		.comments
 			max-height 400px
