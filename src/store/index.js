@@ -8,7 +8,7 @@ export default new Vuex.Store({
 	loading: false,
 	token: "",
 	myInfo: null,
-	compList: [],
+	arr_competitions: null,
 	prizeLevels: [
 		{label: "国一",value:53},
 		{label: "国二",value:52},

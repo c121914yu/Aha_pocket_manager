@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { putComp, postNewComp } from '@/assets/axios/api.js';
+import { putComp, postNewComp,getComps } from '@/assets/axios/api_competition.js';
 export default {
 	props: {
 		competitionInfo: {
@@ -85,7 +85,6 @@ export default {
 		if (this.competitionInfo.name) {
 			this.competition = {...this.competitionInfo}
 		}
-		console.log(this.competition);
 	},
 	methods: {
 		/* 选择图片 */
@@ -112,7 +111,11 @@ export default {
 							postNewComp(data)
 							.then(res => {
 								this.$showSuccess('添加比赛信息成功');
-								this.$emit('finish');
+								getComps()
+								.then(res => {
+									this.$store.state.arr_competitions = res.data
+									this.$emit('finish');
+								})
 							});
 						} 
 						/* 修改比赛 */

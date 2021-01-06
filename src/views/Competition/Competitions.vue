@@ -12,7 +12,7 @@
 			ref="table"
 			style="width: 100%"
 			stripe
-			:data="competitions.filter(item => !searchText || item.name === searchText)">
+			:data="competitions.filter(item => !searchText || item.name.indexOf(searchText)>-1)">
 			<el-table-column
 				label="ID"
 				width="100"
@@ -27,13 +27,18 @@
 			<el-table-column
 				label="比赛分类"
 				align="center"
+				:filters="compFilter"
+				filter-placement="bottom-end"
+				:filter-multiple="false"
+				:filter-method="(value, comp) => comp.competitionType.id === value"
+				column-key="comp"
 				prop="competitionType.name">
 			</el-table-column>
 			<el-table-column
 				label="比赛介绍"
 				align="center">
 				<template slot-scope="scope">
-					<el-button size="mini" @click="showIntro=scope.row.intro">点击查看比赛介绍</el-button>
+					<el-button size="mini" @click="getCompetition(scope)">点击查看比赛介绍</el-button>
 				</template>
 			</el-table-column>
 			<el-table-column align="center">
@@ -45,11 +50,11 @@
 						v-model="searchText"/>
 				</template>
 				<template slot-scope="scope">
-					<el-button size="mini" @click="EditType=1;competition={...scope.row,type:scope.row.competitionType.id}">Edit</el-button>
+					<el-button size="mini" @click="editComp(scope)">Edit</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
-		<IntroCard v-if="showIntro" title="比赛介绍" :html="showIntro" @close="showIntro=''"></IntroCard>
+		<IntroCard v-if="introMsg" title="比赛介绍" :html="introMsg" @close="introMsg=''"></IntroCard>
 		<EditCompetition 
 			v-if="competition"
 			:competitionInfo="competition" 
@@ -61,9 +66,9 @@
 </template>
 
 <script>
+import { getComps,getComp } from "@/assets/axios/api_competition.js"
 import EditCompetition from "@/components/EditCompetition/EditCompetition.vue"
 import IntroCard from "@/components/IntroCard/IntroCard.vue"
-import { getComps } from "@/assets/axios/api.js"
 export default{
 	data(){
 		return{
@@ -71,7 +76,17 @@ export default{
 			searchText: "",
 			EditType: 0,
 			competition: null,
-			showIntro: ''
+			introMsg: ''
+		}
+	},
+	computed: {
+		compFilter(){
+			return this.$store.state.compType.map(item => {
+				return{
+					text: item.label,
+					value: item.value
+				}
+			})
 		}
 	},
 	components: {
@@ -89,11 +104,49 @@ export default{
 			this.competition = null
 			getComps()
 			.then(res => {
-				this.$store.state.arr_competions = res.data
+				this.$store.state.arr_competitions = res.data
 				this.competitions = res.data
 				console.log(res.data);
 			})
 		},
+		/* 点击查看介绍，获取比赛详细信息 */
+		getCompetition(scope)
+		{
+			const showIntro = () => {
+				this.introMsg = this.competitions[scope.$index].intro
+			}
+			if(!scope.row.intro){
+				getComp(scope.row.id)
+				.then(res => {
+					this.competitions[scope.$index] = res.data
+					showIntro()
+				})
+			}
+			else{
+				showIntro()
+			}
+		},
+		/* 编辑比赛信息 */
+		editComp(scope)
+		{
+			this.EditType = 1
+			const showEditComp = () => {
+				this.competition={
+					...this.competitions[scope.$index],
+					type: this.competitions[scope.$index].competitionType.id,
+				}
+			}
+			if(!scope.row.intro){
+				getComp(scope.row.id)
+				.then(res => {
+					this.competitions[scope.$index] = res.data
+					showEditComp()
+				})
+			}
+			else{
+				showEditComp()
+			}
+		}
 	}
 }
 </script>

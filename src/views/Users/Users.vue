@@ -128,7 +128,7 @@
 </template>
 
 <script>
-import { getUsers } from "@/assets/axios/api.js"
+import { getUsers } from "@/assets/axios/api_user.js"
 export default {
   data(){
     return {

@@ -28,7 +28,7 @@
 import Loading from './components/Loading'
 import LeftNav from './components/LeftNav'
 import TopNav from './components/TopNav'
-import { getMe,getComps } from '@/assets/axios/api.js'
+import { getMe } from '@/assets/axios/api_user.js'
 
 export default {
 	created() {
@@ -40,10 +40,6 @@ export default {
 					token,
 					personalUserInfo: res.data
 				})
-			})
-			getComps()
-			.then(res => {
-				this.$store.state.arr_competions = res.data;
 			})
 		}
 	},

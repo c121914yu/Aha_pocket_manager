@@ -64,3 +64,38 @@ Vue.prototype.gformatDate = (time,breakLine=false) => {
 	}
 	return `${year < 10 ? '0'+year : year}/${month < 10 ? '0'+month : month}/${day < 10 ? '0'+day : day} ${hour < 10 ? '0'+hour : hour}:${minutes < 10 ? '0'+minutes : minutes}`
 }
+
+/* 
+	获取文件URL
+	@params signature:Object 签名
+*/
+Vue.prototype.gGetFileUrl = (signature) => {
+	return new Promise((resolve,reject) => {
+		let cos
+		try{
+			cos = new COS({
+			   getAuthorization: (options, callback) => {
+				   callback({
+				       Authorization: signature.authorization
+				   })
+			   }
+			})
+		} catch(err){
+			reject(err)
+		}
+		
+		cos.getObjectUrl({
+		    Bucket: signature.bucketName,
+		    Region: signature.region, 
+		    Key: signature.filename,
+		    Sign: true
+		}, (err, data) => {
+			if(err){
+				reject(err)
+			}
+			else{
+				resolve(data.Url)
+			}
+		})
+	})
+}

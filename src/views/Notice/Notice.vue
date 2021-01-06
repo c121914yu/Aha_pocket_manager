@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { getNotices,sendNotice,putNotice } from "@/assets/axios/api.js"
+import { getNotices,sendNotice,putNotice } from "@/assets/axios/api_message.js"
 import IntroCard from "@/components/IntroCard/IntroCard.vue"
 import EditNotice from "@/components/EditNotice/EditNotice.vue"
 export default{

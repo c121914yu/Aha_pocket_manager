@@ -11,7 +11,8 @@ VueRouter.prototype.push = function push(location) {
 
 import store from '@/store'
 
-const routes = [{
+const routes = [
+	{
 		path: '/',
 		name: 'Login',
 		meta: {
@@ -115,10 +116,14 @@ const routes = [{
 		},
 		component: () => import('../views/Admin/Admin.vue')
 	},
+	{
+		path: '*',
+		redirect: "/"
+	},
 ]
 
 const router = new VueRouter({
-	mode: 'history',
+	// mode: 'history',
 	base: process.env.BASE_URL,
 	routes
 })

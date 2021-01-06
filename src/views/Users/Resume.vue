@@ -90,7 +90,7 @@
 </template>
 
 <script>
-import { getUser,getResume } from "@/assets/axios/api.js"
+import { getUser,getResume } from "@/assets/axios/api_user.js"
 export default{
 	data(){
 		return{

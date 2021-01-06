@@ -2,25 +2,43 @@
 	<div class="projects">
 		<h1>项目管理</h1>
 		<header>
-			<!-- 搜索框 -->
-			<el-input placeholder="输入搜索内容" v-model="searchText">
-				<el-select slot="prepend" v-model="searchType">
-					<el-option label="项目标题" value="name"></el-option>
-					<el-option label="手机号" value="phone"></el-option>
-					<el-option label="作者名" value="author"></el-option>
-				</el-select>
+			<div>
+				<!-- 搜索框 -->
+				<el-input placeholder="输入搜索内容" v-model="searchText">
+					<el-select slot="prepend" v-model="searchType">
+						<el-option label="项目标题" value="name"></el-option>
+						<el-option label="手机号" value="phone"></el-option>
+						<el-option label="作者名" value="author"></el-option>
+					</el-select>
+					<el-button
+						slot="append"
+						class="search-btn"
+						icon="el-icon-search"
+						@click="getProjectsData(true)">
+					</el-button>
+				</el-input>
 				<el-button
-					slot="append"
-					class="search-btn"
-					icon="el-icon-search"
-					@click="getProjectsData(true)">
+					class="reset-btn"
+					icon="el-icon-refresh-left"
+					@click="reset">
 				</el-button>
-			</el-input>
-			<el-button
-				class="reset-btn"
-				icon="el-icon-refresh-left"
-				@click="reset">
-			</el-button>
+			</div>
+			<div class="competition">
+				<span><strong>参与赛事</strong></span>
+				<el-select 
+					v-model="filterComp" 
+					filterable 
+					placeholder="筛选参与相关赛事的项目"
+					clearable
+					@change="getProjectsData(true)">
+				    <el-option
+				      v-for="(item,index) in arr_competion"
+				      :key="item.id"
+				      :label="item.name"
+				      :value="item.id">
+				    </el-option>
+				</el-select>
+			</div>
 		</header>
 		<el-table 
 			ref="table"
@@ -42,11 +60,6 @@
 			<el-table-column
 				label="参与赛事"
 				align="center"
-				:filters="arr_competion"
-				filter-placement="bottom-end"
-				:filter-multiple="false"
-				:filter-method="(value, project) => project.compId === value"
-				column-key="compId"
 				prop="compName">
 			</el-table-column>
 			<el-table-column
@@ -106,7 +119,8 @@
 </template>
 
 <script>
-import { getProjects } from "@/assets/axios/api.js"
+import { getProjects } from "@/assets/axios/api_project.js"
+import { getComps } from "@/assets/axios/api_competition.js"
 export default {
     data(){
 		const prizeLevels = this.$store.state.prizeLevels
@@ -121,24 +135,24 @@ export default {
 			passed: null,
 			is_loadAll: false,
 			projects: [],
+			arr_competion: [],
 			prizeLevels
 		}
 	},
-	computed: {
-		arr_competion(){
-			if(this.$store.state.arr_competions){
-				return this.$store.state.arr_competions.map(item => {
-					return {
-						text: item.name,
-						value: item.id
-					}
-				})
-			}
-			return []
-		}
-	},
 	created() {
-		this.getProjectsData(true)
+		if(!this.$store.state.arr_competitions){
+			getComps()
+			.then(res => {
+				this.$store.state.arr_competitions = res.data
+				this.arr_competion = res.data
+				this.getProjectsData(true)
+				console.log(this.arr_competion)
+			})
+		}
+		else{
+			this.arr_competion = this.$store.state.arr_competitions
+			this.getProjectsData(true)
+		}
 	},
 	methods: {
 		/*  get projects by params
@@ -158,9 +172,10 @@ export default {
 				pageSize: this.pageSize,
 				sortBy: this.sortBy,
 				orderBy: this.orderBy,
-				compId: this.filterComp,
+				compId: this.filterComp || null,
 				passed: this.passed
 			}
+			console.log(parmas);
 			parmas.phone = this.searchText || null
 			getProjects(parmas)
 			.then(res => {
@@ -169,7 +184,7 @@ export default {
 				}
 				res.data.pageData.forEach(project => {
 					/* 查找参与比赛 */
-					let competition = this.$store.state.arr_competions.find(item => item.id === project.compId)
+					let competition = this.arr_competion.find(item => item.id === project.compId)
 					project.compName = competition ? competition.name : ""
 					/* 查找获奖等级 */
 					const level = this.prizeLevels.find(item => project.awardLevel === item.value)
@@ -250,18 +265,17 @@ export default {
 	header
 		.el-input
 			margin-bottom 10px
-			max-width 500px
+			width 500px
 		.el-select
 			width 120px
 		.search-btn:hover
 			background-color #ecf5ff
 			color #409EFF
-		.select
-			margin-right 10px
+		.competition
 			span
 				margin-right 10px
-		.select-comp
-			width 280px
+			.el-select
+				width 490px
 	i
 		font-size 1.4em
 	.success

@@ -10,7 +10,7 @@ const closeLoad = () => {
 
 // 创建实例
 const service = axios.create({
-	baseURL : "http://47.93.224.217:8089",
+	baseURL : "https://ahapocket.cn/api",
 	timeout : 10000
 })
 

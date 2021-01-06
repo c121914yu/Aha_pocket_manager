@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { getMessages,sendInform_all } from "@/assets/axios/api.js"
+import { getMessages,sendInform_all } from "@/assets/axios/api_message.js"
 import IntroCard from "@/components/IntroCard/IntroCard.vue"
 import SendInform from "@/components/SendInform/SendInform.vue"
 export default{

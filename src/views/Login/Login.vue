@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { AdminLogin } from '@/assets/axios/api.js';
+import { AdminLogin } from '@/assets/axios/api_user.js';
 export default {
 	data() {
 		const checkPhone = (rule, value, callback) => {

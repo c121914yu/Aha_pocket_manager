@@ -105,8 +105,8 @@
 </template>
 
 <script>
+import { getFeedbacks,putFeedback } from "@/assets/axios/api_user.js"
 import IntroCard from "@/components/IntroCard/IntroCard.vue"
-import { getFeedbacks,putFeedback } from "@/assets/axios/api.js"
 export default{
 	data(){
 		return{
