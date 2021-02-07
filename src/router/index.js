@@ -77,14 +77,6 @@ const routes = [
 		component: () => import('../views/Orders/Orders.vue')
 	},
 	{
-		path: '/competitions',
-		name: 'Competitions',
-		meta: {
-			login: true,
-		},
-		component: () => import('../views/Competition/Competitions.vue')
-	},
-	{
 		path: '/feedbacks',
 		name: 'Feedbacks',
 		meta: {
@@ -100,13 +92,38 @@ const routes = [
 		},
 		component: () => import('../views/Informs/Informs.vue')
 	},
+	/* 系统相关 */
 	{
-		path: '/notice',
-		name: 'Notice',
+		path: '/slidecard',
+		name: 'SlideCard',
 		meta: {
 			login: true,
 		},
-		component: () => import('../views/Notice/Notice.vue')
+		component: () => import('../views/System/SlideCard/SlideCard.vue')
+	},
+	{
+		path: '/activities',
+		name: 'Activities',
+		meta: {
+			login: true,
+		},
+		component: () => import('../views/System/Activity/Activities.vue')
+	},
+	{
+		path: '/notice',
+		meta: {
+			login: true,
+		},
+		name: "Notice",
+		component: () => import('../views/System/Notice/Notice.vue')
+	},
+	{
+		path: '/competitions',
+		name: 'Competitions',
+		meta: {
+			login: true,
+		},
+		component: () => import('../views/System/Competition/Competitions.vue')
 	},
 	{
 		path: '/admin',
@@ -114,7 +131,7 @@ const routes = [
 		meta: {
 			login: true
 		},
-		component: () => import('../views/Admin/Admin.vue')
+		component: () => import('../views/System/Admin/Admin.vue')
 	},
 	{
 		path: '*',

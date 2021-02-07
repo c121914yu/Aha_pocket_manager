@@ -5,8 +5,7 @@
 			<div class="my-info">
 				<el-avatar 
 					:size="45" 
-					:src="myInfo.avatarUrl">
-					<img src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png" />
+					:src="myInfo.avatarUrl || 'https://aha-public-1257019972.cos.ap-shanghai.myqcloud.com/icon/logo.png'">
 				</el-avatar>
 				<span>
 					{{ myInfo.trueName || myInfo.nickname || '管理员' }}

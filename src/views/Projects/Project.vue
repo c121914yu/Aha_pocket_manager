@@ -105,54 +105,58 @@
 		<el-form>
 			<h2 class="center">附件信息</h2>
 			<!-- 附件列表 -->
-			<div
-				class="file"
-				v-for="(file,index) in arr_files"
-				:key="index">
-				<span 
-					class="filename"
-					:style="{
-						color: file.passed ? 'var(--blue)' : '#727171'
-					}"
-					@click="clickFile(file)">
-					{{file.name}}
-				</span>
-				<div class="count">
-					<div style="margin: 5px 0;">
-						<span class="price" style="color: #f8b86b">
-							<i class="iconfont icon-qian"></i>
-							{{file.price || 0}}
-						</span>
-						<span class="loadAmount">
-							<i class="el-icon-download"></i>
-							{{file.download || 0}}
-						</span>
-						<span class="score" style="color: #F56C6C">
-							<i class="el-icon-star-on"></i>
-							{{file.score || 0}}
-						</span>
-						<span class="score-count" style="color: #956134">
-							<i class="el-icon-chat-dot-round"></i>
-							{{file.scoreCount || 0}}
-						</span>
-					</div>
-					<div>
-						<span class="check-file">
-							<small>状态:</small>
-							<el-radio-group v-model="file.passed" @change="checkFileStatus($event,file,index)">
-								<el-radio :label="true">已通过</el-radio>
-								<el-radio :label="false">未通过</el-radio>
-							</el-radio-group>
-						</span>
-						<span @click="deleteFile(file,index)">
-							<el-button type="danger" circle icon="el-icon-delete" size="mini"></el-button>
-						</span>
+			<div class="files">
+				<div
+					class="file"
+					v-for="(file,index) in arr_files"
+					:key="index">
+					<span 
+						class="filename"
+						:style="{
+							color: file.passed ? 'var(--blue)' : '#727171'
+						}"
+						@click="clickFile(file)">
+						{{file.name}}
+					</span>
+					<div class="count">
+						<div style="margin: 5px 0;">
+							<span class="price" style="color: #f8b86b">
+								<i class="iconfont icon-qian"></i>
+								{{file.price || 0}}
+							</span>
+							<span class="loadAmount">
+								<i class="el-icon-download"></i>
+								{{file.download || 0}}
+							</span>
+							<span class="score" style="color: #F56C6C">
+								<i class="el-icon-star-on"></i>
+								{{file.score || 0}}
+							</span>
+							<span class="score-count" style="color: #956134">
+								<i class="el-icon-chat-dot-round"></i>
+								{{file.scoreCount || 0}}
+							</span>
+						</div>
+						<div>
+							<span class="check-file">
+								<small>状态:</small>
+								<el-radio-group v-model="file.passed" @change="checkFileStatus($event,file,index)">
+									<el-radio :label="true">已通过</el-radio>
+									<el-radio :label="false">未通过</el-radio>
+								</el-radio-group>
+							</span>
+							<span @click="deleteFile(file,index)">
+								<el-button type="danger" circle icon="el-icon-delete" size="mini"></el-button>
+							</span>
+						</div>
 					</div>
 				</div>
 			</div>
-			<!-- 评论 -->
-			<h3 class="center">评论信息</h3>
-			<div 
+		</el-form>
+		<!-- 评论 -->
+		<el-form>
+			<h2 class="center">评论信息</h2>
+			<div
 				class="comments" 
 				v-infinite-scroll="getCommentsInfo"
 				infinite-scroll-distance="20"
@@ -180,7 +184,7 @@
 			</div>
 		</el-form>
 		<!-- 购买记录 -->
-		<el-form>
+		<el-form class="purchased-record">
 			<h2 class="center">用户购买记录</h2>
 			<el-table
 				class="purchase-records"
@@ -190,27 +194,38 @@
 				v-infinite-scroll="getPurchased"
 				infinite-scroll-distance="20"
 				:infinite-scroll-disabled="purcharsedLoad.showAll"
-				@row-click="readRecord">
+				@row-click="order=$event">
 				<el-table-column type="index"></el-table-column>
 				<el-table-column
 					label="购买人"
-					prop="name"
+					prop="contribPointOrder.user.nickname"
 					align="center">
 				</el-table-column>
 				<el-table-column
 					label="购买附件"
-					prop="filename"
-					align="center">
+					align="center"
+					min-width="200">
+					<template slot-scope="scope">
+						<div
+							v-for="(file,index) in scope.row.contribPointOrder.orderResources"
+							:key="index">
+							{{file.resource.name}}
+						</div>
+					</template>
 				</el-table-column>
 				<el-table-column
 					label="时间"
-					prop="time"
+					width="100"
+					prop="purchaseTime"
 					align="center">
 				</el-table-column>
 				<el-table-column
 					label="花费"
-					prop="point"
 					align="center">
+					<template slot-scope="scope">
+						<div><strong>{{scope.row.contribPointOrder.chargedAhaCredit}}</strong>Aha币</div>
+						<div><strong>{{scope.row.contribPointOrder.chargedAhaPoint}}</strong>Aha点</div>
+					</template>
 				</el-table-column>
 			</el-table>
 		</el-form>
@@ -232,15 +247,18 @@
 			@close="editCompetitionInfo=null"
 			@finish="getProjectInfo">
 		</EditCompetition>
+		<!-- 订单详细 -->
+		<OrderDetail v-if="order" :order="order" @close="order=null"></OrderDetail>
 	</div>
 </template>
 
 <script>
 import { getProject,putProject,getComments,removeComment,getFiles,checkFile,removeFile,getLoadSignature,checkProject } from "@/assets/axios/api_project.js"
 import { sendInform } from "@/assets/axios/api_message.js"
-import { getFileOrders } from "@/assets/axios/api_order.js"
+import { getOrders } from "@/assets/axios/api_order.js"
 import EditCompetition from "@/components/EditCompetition/EditCompetition.vue"
 import SendInform from "@/components/SendInform/SendInform.vue"
+import OrderDetail from "@/components/OrderDetail/OrderDetail.vue"
 export default{
 	data(){
 		return{
@@ -276,6 +294,7 @@ export default{
 				fileId: null,
 			},
 			arr_purchasedFile: [],
+			order: null
 		}
 	},
 	computed: {
@@ -298,7 +317,8 @@ export default{
 	},
 	components: {
 		EditCompetition,
-		SendInform
+		SendInform,
+		OrderDetail
 	},
 	created() {
 		this.getProjectInfo()
@@ -472,7 +492,7 @@ export default{
 				projectId: this.$route.params.id
 			})
 			.then(res => {
-				if(res.data.pageSize < this.commentLoad.pageSize){
+				if(res.data.pageData.length < this.commentLoad.pageSize){
 					this.commentLoad.showAll = true
 				}
 				else{
@@ -484,9 +504,6 @@ export default{
 					comment.time = this.gformatDate(comment.time)
 					comment.filename = file.name
 					this.arr_comments.push(comment)
-					for(let i=0;i<15;i++){
-						this.arr_comments.push(comment)
-					}
 				})
 				// console.log(this.arr_comments)
 			})
@@ -502,33 +519,32 @@ export default{
 			})
 		},
 		/* 获取购买记录 */
-		getPurchased()
+		getPurchased(fileId=null)
 		{
 			this.purcharsedLoad.showAll = true
-			const result = []
-			this.arr_files.forEach(file => {
-				getFileOrders({
-					resourceId: file.id,
-					pageNum: this.purcharsedLoad.pageNum,
-					pageSize: this.purcharsedLoad.pageSize
+			getOrders({
+				pageNum: this.purcharsedLoad.pageNum,
+				pageSize: this.purcharsedLoad.pageSize,
+				projectId: this.$route.params.id,
+			})
+			.then(res => {
+				if(res.data.pageData.length < this.purcharsedLoad.pageSize){
+					this.purcharsedLoad.showAll = true
+				}
+				else{
+					this.purcharsedLoad.pageNum++
+					this.purcharsedLoad.showAll = false
+				}
+				res.data.pageData.forEach(order => {
+					order.purchaseTime = this.gformatDate(order.purchaseTime,true)
+					order.contribPointOrder.createTime = this.gformatDate(order.contribPointOrder.createTime,true)
+					order.contribPointOrder.payTime = this.gformatDate(order.contribPointOrder.payTime,true)
+					this.arr_purchasedFile.push(order)
 				})
-				.then(res => {
-					result = result.concat(res.data.pageData.map(item => {
-						return{
-							time: this.gformatDate(item.purchaseTime),
-							
-						}
-					}))
-					console.log(res.data);
-				})
+				// console.log(this.arr_purchasedFile);
 			})
 		},
-		/* 查看购买记录 */
-		readRecord(row,column)
-		{
-			console.log(row);
-		}
-	},
+	}
 }
 </script>
 
@@ -569,25 +585,28 @@ export default{
 			background-color #feedcb
 			overflow-y auto
 		/* 附件信息 */
-		.file
-			margin-bottom 10px
-			padding 10px 5px 
-			border 1px solid var(--boder-color1)
-			border-radius var(--radius2)
-			.filename
-				margin-right 5px
-				text-decoration underline
-				cursor pointer
-			.count
-				line-height 1
-				.iconfont
-					font-size 13px
-			span
-				margin-bottom 5px
-				margin-right 15px
+		.files
+			max-height 500px
+			overflow-y auto
+			.file
+				margin-bottom 10px
+				padding 10px 5px 
+				border 1px solid var(--boder-color1)
+				border-radius var(--radius2)
+				.filename
+					margin-right 5px
+					text-decoration underline
+					cursor pointer
+				.count
+					line-height 1
+					.iconfont
+						font-size 13px
+				span
+					margin-bottom 5px
+					margin-right 15px
 		/* 评论 */
 		.comments
-			max-height 400px
+			max-height 500px
 			overflow-y auto
 			.comment
 				margin 5px
@@ -597,7 +616,7 @@ export default{
 				border-radius var(--radius2)
 				display flex
 				.right
-					padding 0 10px
+					padding-left 10px
 					flex 1
 					font-size 0.8em
 					header
@@ -618,10 +637,12 @@ export default{
 					footer
 						display flex
 						justify-content space-between
+						align-items flex-end
 						.filename
 							color var(--gray)
 			
-		/* 购买记录 */
-		// .purchase-records
-		// 	*
+	/* 购买记录 */
+	.purchased-record
+		grid-column 1 / 3
+		white-space pre-line
 </style>

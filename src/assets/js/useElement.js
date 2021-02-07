@@ -34,7 +34,7 @@ import {
 	TimePicker,
 	Row,
 	Col,
-	Rate 
+	Rate,
 } from 'element-ui'
 Vue
 	.use(Rate)
@@ -71,3 +71,4 @@ Vue
 	.use(FormItem)
 	.use(Table)
 	.use(TableColumn)
+

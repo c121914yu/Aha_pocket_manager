@@ -7,11 +7,26 @@
 			<div class="center">
 				<el-image
 					style="width: 80px;height:80px;border-radius: 50%;"
-					:src="userInfo.avatarUrl"
+					:src="userInfo.avatarUrl || 'https://aha-public-1257019972.cos.ap-shanghai.myqcloud.com/icon/logo.png'"
 					fit="fill"
-					:preview-src-list="[userInfo.avatarUrl]">
+					:preview-src-list="[userInfo.avatarUrl || 'https://aha-public-1257019972.cos.ap-shanghai.myqcloud.com/icon/logo.png']">
 				</el-image>
 			</div>
+			<!-- 身份 -->
+			<el-form-item label="用户身份">
+				{{userInfo.role.name}}
+				<!-- <el-select 
+					placeholder="请选择用户身份"
+					v-model="userInfo.role.name"
+					@change="setUserRole">
+				    <el-option
+				      v-for="item in arr_roles"
+				      :key="item"
+				      :label="item"
+				      :value="item">
+				    </el-option>
+				  </el-select> -->
+			</el-form-item>
 			<!-- id -->
 			<el-form-item label="userId">
 				{{userInfo.id}}
@@ -59,20 +74,6 @@
 		<!-- 重要信息 -->
 		<el-form label-width="80px">
 			<h2 class="center">用户重要信息</h2>
-			<!-- 身份 -->
-			<el-form-item label="用户身份">
-				<el-select 
-					placeholder="请选择用户身份"
-					v-model="userInfo.role.name"
-					@change="setUserRole">
-				    <el-option
-				      v-for="item in arr_roles"
-				      :key="item"
-				      :label="item"
-				      :value="item">
-				    </el-option>
-				  </el-select>
-			</el-form-item>
 			<!-- 手机号 -->
 			<el-form-item label="手机号">
 				{{userInfo.phone || "未绑定"}}
@@ -84,7 +85,6 @@
 			<!-- 贡献点 -->
 			<el-form-item label="Aha点">
 				<strong>{{userInfo.ahaPoint}}</strong>
-				<span class="give-point">Aha点调整</span>
 			</el-form-item>
 			<!-- 协议签署 -->
 			<el-form-item label="协议状态">
@@ -98,6 +98,7 @@
 				<el-radio-group v-model="userInfo.signedContract" @change="setNotice">
 					<el-radio :label="true">已签署</el-radio>
 					<el-radio :label="false">未签署</el-radio>
+					<el-button v-if="userInfo.signedContract" size="mini">查看合同</el-button>
 				</el-radio-group>
 			</el-form-item>
 			<!-- 合同图片 -->
@@ -114,35 +115,46 @@
 			<h2 class="center">用户活跃程度</h2>
 			<div class="charts" ref="liveness"></div>
 		</el-form>
-		<!-- 用户消费记录 -->
+		<!-- 用户账单记录 -->
 		<el-form 
-			class="expense" 
+			class="orders" 
 			label-width="80px"
-			:infinite-scroll-disabled="is_loadAllExpense || is_loadingExpense"
-			v-infinite-scroll="loadExpense"
+			:infinite-scroll-disabled="orderLoad.is_showAll"
+			v-infinite-scroll="loadOrders"
 			infinite-scroll-distance=30>
-			<h2 class="center">用户消费记录</h2>
+			<h2 class="center">用户账单</h2>
 			<div 
-				class="expense-card"
-				v-for="(expense,index) in arr_expense"
-				:key="index">
+				class="order-card"
+				v-for="(order,index) in arr_orders"
+				:key="index"
+				@click="readOrder(order)">
 				<el-row class="header">
-				  <el-col class="order-number" :span="20">订单号: {{expense.orderNumber}}</el-col>
-				  <el-col class="time" :span="4">{{expense.time}}</el-col>
+				  <el-col :span="20">附件购买 - {{order.contribPointOrder.project.name}}</el-col>
+				  <el-col class="time" :span="4"><small>{{order.purchaseTime}}</small></el-col>
 				</el-row>
 				<el-row class="main">
 					<el-col class="left" :span="20">
-						<div class="desc">{{expense.type}} - {{expense.describe}}</div>
-						<div class="commodity">相关商品：<strong>{{expense.commodity}}</strong></div>
-						<div class="type"></div>
+						<ul>
+							<li
+								class="filename"
+								 v-for="(file,index) in order.contribPointOrder.orderResources"
+								 :key="index">
+								{{file.resource.name}}
+							</li>
+						</ul>
 					</el-col>
 					<el-col class="right" :span="4">
-						<h1 class="amount">{{expense.amount > 0 ? "+"+expense.amount : expense.amount}}</h1>
-						<div class="payWay">{{expense.payWay}}</div>
+						<h1 class="amount">-{{order.contribPointOrder.totalCost}}</h1>
+						<div 
+							:style="{
+								color: order.contribPointOrder.status === 0 ? 'var(--red)' : 'var(--origin2)'
+							}">
+							<small><strong>{{order.contribPointOrder.status === 0 ? "已取消" : "已支付"}}</strong></small>
+						</div>
 					</el-col>
 				</el-row>
 			</div>
-			<p class="center remark">{{is_loadAllExpense ? "已加载全部" : ""}}</p>
+			<p class="center remark">{{orderLoad.is_showAll ? "已加载全部" : ""}}</p>
 		</el-form>
 		<SendInform 
 			v-if="isSendInform"
@@ -150,13 +162,17 @@
 			@close="isSendInform=false"
 			@success="sendInform">
 		</SendInform>
+		<!-- 订单详细 -->
+		<OrderDetail v-if="order" :order="order" @close="order=null"></OrderDetail>
 	</div>
 </template>
 
 <script>
-import { getUser,getUserContract,putUserPrivate } from "@/assets/axios/api_user.js"
+import { getUser,getUserContract,putUserPrivate,getAuthentication,getAuthenticationFile,checkAuthentication } from "@/assets/axios/api_user.js"
 import { sendInform } from "@/assets/axios/api_message.js"
+import { getOrders } from "@/assets/axios/api_order.js"
 import SendInform from "@/components/SendInform/SendInform.vue"
+import OrderDetail from "@/components/OrderDetail/OrderDetail.vue"
 export default{
 	data(){
 		return {
@@ -164,17 +180,13 @@ export default{
 			contarctImg: "", //合同图片
 			arr_roles: ["ROLE_ADMIN","ROLE_SUPERADMIN"],//身份数组
 			isSendInform: false,
-			pageNum_expense: 1,
-			pageSize_expense: 5,
-			is_loadingExpense: false,
-			is_loadAllExpense: true,
-			arr_expense: [
-				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
-				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
-				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
-				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"},
-				{orderNumber:"5454541518",time:"2020/12/27",type: "账单分账",describe:"僵尸企业识别附件购买",commodity:"*****.ppt",amount: 50,payWay:"Aha点"}
-			]
+			orderLoad: {
+				pageNum: 1,
+				pageSize: 20,
+				is_showAll: false
+			},
+			arr_orders: [],
+			order: null
 		}
 	},
 	computed: {
@@ -193,7 +205,8 @@ export default{
 		"$route": "initData"
 	},
 	components: {
-		SendInform
+		SendInform,
+		OrderDetail
 	},
 	created() {
 		this.initData()
@@ -208,6 +221,8 @@ export default{
 				console.log(this.userInfo)
 				/* 请求合同图片 */
 				this.getContract()
+				/* 实名认证信息 */
+				this.getAuthenticationInfo()
 				/* 绘制图表 */
 				this.$nextTick(this.initLiveness)
 			})
@@ -218,20 +233,17 @@ export default{
 			if(this.userInfo.signedContract){
 				getUserContract(this.userInfo.id)
 				.then(res => {
-					/* 二进制转base64 */
-					let binary = ''
-					let bytes = new Uint8Array(res)
-					for (let i=0;i<bytes.byteLength;i++) {
-						binary += String.fromCharCode(bytes[i])
-					}
-					this.contarctImg = 'data:image/jpeg;base64,' + window.btoa(binary)
+					this.contarctImg = this.binaryToBase64(res)
 				})
 			}
 		},
-		/* 修改用户身份（设置管理员） */
-		setUserRole(e)
+		/* 获取实名认证信息,先判断 */
+		getAuthenticationInfo()
 		{
-			console.log(e);
+			getAuthentication(this.userInfo.id)
+			.then(res => {
+				console.log(res);
+			})
 		},
 		/* 
 			name：修改协议状态
@@ -362,23 +374,35 @@ export default{
 			chart.setOption(option)
 		},
 		/* 加载订单信息 */
-		loadExpense()
+		loadOrders()
 		{
-			console.log(1);
-			if(!this.is_loadAllExpense){
-				this.is_loadingExpense = true
-				this.$store.commit("setLoading",true)
-				/* 请求数据 */
-				setTimeout(() => {
-					this.arr_expense.push(...this.arr_expense)
-					this.pageNum_expense++
-					if(this.pageNum_expense >= 3){
-						this.is_loadAllExpense = true
-					}
-					this.is_loadingExpense = false
-					this.$store.commit("setLoading",false)
-				},2000)
-			}
+			this.orderLoad.is_showAll = true
+			getOrders({
+				pageNum: this.orderLoad.pageNum,
+				pageSize: this.orderLoad.pageSize,
+				userId: this.$route.params.id
+			})
+			.then(res => {
+				if(res.data.pageData.length < this.orderLoad.pageSize){
+					this.orderLoad.is_showAll = true
+				}
+				else{
+					this.orderLoad.pageNum++
+					this.orderLoad.is_showAll = false
+				}
+				res.data.pageData.forEach(order => {
+					order.purchaseTime = this.gformatDate(order.purchaseTime)
+					order.contribPointOrder.createTime = this.gformatDate(order.contribPointOrder.createTime,true)
+					order.contribPointOrder.payTime = this.gformatDate(order.contribPointOrder.payTime,true)
+					this.arr_orders.push(order)
+				})
+				console.log(this.arr_orders);
+			})
+		},
+		/* 阅读订单 */
+		readOrder(order)
+		{
+			this.order = order
 		}
 	}
 }
@@ -424,16 +448,11 @@ export default{
 				border-radius var(--radius2)
 			.save-btn
 				width 300px
-			.give-point
-				margin-left 10px
-				color var(--blue)
-				text-decoration underline
-				cursor pointer
 	/* 账单 */
-	.expense
+	.orders
 		height 461px
-		overflow auto
-		.expense-card
+		overflow-y auto
+		.order-card
 			margin-bottom 10px
 			border-radius var(--radius2)
 			box-shadow var(--shadow1)
@@ -447,16 +466,12 @@ export default{
 					text-align right
 			.main
 				background-color #FFFFFF
-				.left
-					.desc
-						color var(--origin1)
+				.filename
+					color var(--origin1)
 				.right
-					text-align center
+					text-align end
 					.amount
-						color var(--red)
-					.payWay
-						font-size 12px
-						color var(--gray)
+						color var(--origin1)
 		.remark
 			font-size 12px
 			color var(--gray)

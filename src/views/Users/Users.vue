@@ -26,6 +26,9 @@
 			style="width: 100%"
 			stripe
 			:data="users"
+			:infinite-scroll-disabled="isShowAll"
+			v-infinite-scroll="getUserData"
+			infinite-scroll-distance=30
 			@sort-change="sortChange"
 			@filter-change="fileterChange">
 			<el-table-column
@@ -36,13 +39,15 @@
 			<el-table-column
 				label="创建时间"
 				sortable
-				width="120px"
+				width="105px"
 				column-key="date"
-				prop="createdTime">
+				prop="createdTime"
+				align="center">
 			</el-table-column>
 			<el-table-column
 				label="姓名/昵称"
-				prop="name">
+				prop="name"
+				align="center">
 			</el-table-column>
 			<el-table-column
 				label="实名认证"
@@ -100,11 +105,15 @@
 					</template>
 			</el-table-column>
 			<el-table-column
-				label="贡献度"
+				label="虚拟货币"
 				align="center"
 				sortable
 				:sort-orders="['descending', null]"
-				prop="contribPoint">
+				column-key="ahaPoint">
+				<template slot-scope="scope">
+					<div>{{scope.row.ahaCredit}}Aha点</div>
+					<div>{{scope.row.ahaPoint}}Aha点</div>
+				</template>
 			</el-table-column>
 			<el-table-column 
 				label="操作"
@@ -116,14 +125,7 @@
 				</template>
 			</el-table-column>
 		</el-table>
-		<p 
-			class="show-remind center"
-			:style="{
-				cursor: isShowAll ? 'default' : 'pointer'
-			}"
-			@click="handleShowMore">
-			{{isShowAll ? "已加载全部" : "点击加载更多"}}
-		</p>
+		<p class="show-remind center">{{isShowAll ? "已加载全部" : ""}}</p>
 	</div>
 </template>
 
@@ -144,16 +146,21 @@ export default {
 			users: []
 		}
   },
+  created() {
+  	this.getUserData(true)
+  },
   methods: {
 		/* 
 			name: 获取用户信息
 			desc: 传入变量获取用户信息，并判断是否已经加载全部
 			time: 2020/11/29
 		*/
-		getUserData(clear=false)
+		getUserData(init=false)
 		{
-			if(clear)
+			this.isShowAll = true
+			if(init){
 				this.pageNum = 1
+			}
 			const data = {
 				pageNum: this.pageNum,
 				pageSize: this.pageSize,
@@ -165,26 +172,23 @@ export default {
 			data[this.searchType] = this.searchText
 			getUsers(data)
 			.then(res => {
-				console.log(res.data.pageData);
-				const resArr = res.data.pageData.map(item => {
-					const date = new Date(item.createdTime)
-					return {
-						...item,
-						createdTime: `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`, // 格式化日期
-						name: item.trueName || item.nickname
-					}
-				})
-				if(clear)
-					this.users = resArr
-				else
-					this.users = this.users.concat(resArr)
+				if(init){
+					this.users = []
+				}
 				/* 判断是否是最后一页 */
-				if(res.data.pageSize < this.pageSize)
+				if(res.data.pageData.length < this.pageSize){
 					this.isShowAll = true
+				}
 				else{
 					this.isShowAll = false
 					this.pageNum++
 				}
+				res.data.pageData.forEach(item => {
+					item.name = item.trueName || item.nickname
+					item.createdTime = this.gformatDate(item.createdTime,true)
+					this.users.push(item)
+				})
+				console.log(this.users);
 			})
 		},
 		/* 重置 */
@@ -203,10 +207,12 @@ export default {
 		sortChange(column)
 		{
 			this.sortBy = column.order ? column.prop : null
-			if(column.order)
+			if(column.order){
 				this.orderBy = column.order === "descending" ? "desc" : "asc"
-			else
+			}
+			else{
 				this.orderBy = column.order
+			}
 			console.log(column);
 			this.getUserData(true)
 		},
@@ -222,20 +228,6 @@ export default {
 			}
 			this.getUserData(true)
 		},
-		/* 
-			name: handleShowMore
-			desc: if not showAll,request more users data
-			time: 2020/11/29
-		*/
-	  handleShowMore()
-		{
-			if(this.isShowAll)
-				return
-			this.getUserData()
-		},
-	},
-	mounted() {
-		this.getUserData()
 	}
 }
 </script>
@@ -243,6 +235,7 @@ export default {
 <style lang="stylus" scoped>
 .users
 	min-width 1070px
+	white-space pre-line
 	header
 		h2
 			margin-bottom 10px

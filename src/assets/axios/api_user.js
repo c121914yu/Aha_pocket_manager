@@ -16,6 +16,13 @@ const putUserPrivate = (userId,data) => PUT(`/admin/user/${userId}`,data)
 /* 获取用户简历 */
 const getResume = (userId) => GET(`/resume/${userId}`,{})
 
+/* 获取用户身份认证信息 */
+const getAuthentication = (userId) => GET(`/admin/authentication/${userId}`,{})
+/* 获取身份认证图片 */
+const getAuthenticationFile = (userId,params) => GET(`/admin/authentication/file/${userId}`,params)
+/* 审核身份认证 */
+const checkAuthentication = (userId,data) => POST(`/admin/authentication/check/${userId}`,data)
+
 /* 分页获取用户反馈 */
 const getFeedbacks = (param) => GET("/admin/feedback",param)
 /* 处理反馈 */
@@ -31,6 +38,12 @@ export {
 	getUserContract,
 	putUserPrivate,
 	getResume,
+	
+	/* 实名认证 */
+	getAuthentication,
+	getAuthenticationFile,
+	checkAuthentication,
+	
 	/* 反馈 */
 	getFeedbacks,
 	putFeedback
