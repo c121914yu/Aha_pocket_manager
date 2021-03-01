@@ -43,7 +43,11 @@
 					<el-button size="mini" @click="introMsg=scope.row.intro">查看活动介绍</el-button>
 				</template>
 			</el-table-column>
-			<el-table-column label="兑换码剩余数量" prop="codeSum" align="center"></el-table-column>
+			<el-table-column label="可生成兑换码数量" align="center">
+				<template slot-scope="scope">
+					{{scope.row.codeSum - scope.row.unUse}}
+				</template>
+			</el-table-column>
 			<el-table-column 
 				label="价值" 
 				align="center">
@@ -52,7 +56,7 @@
 					<div>{{scope.row.exchangeAhaPoint}}Aha点</div>
 				</template>
 			</el-table-column>
-			<el-table-column label="操作" align="center">
+			<el-table-column class="btns" label="操作" align="center">
 				<template slot-scope="scope">
 					<el-button size="mini" @click="getCode(scope.row)">生成兑换码</el-button>
 					<el-button size="mini" type="danger" @click="removeActivity(scope.row)">Delete</el-button>
@@ -71,14 +75,14 @@
 </template>
 
 <script>
-import { getActivitiy,deleteActivity,getCDKEY } from '@/assets/axios/api_system.js';
+import { getActivitiy,deleteActivity,getCDKEY,getUnuserCDKEY } from '@/assets/axios/api_system.js';
 import IntroCard from "@/components/IntroCard/IntroCard.vue"
 import EditActivity from "./EditActivity.vue"
 export default {
 	data() {
 		return {
 			pageNum: 1,
-			pageSize: 30,
+			pageSize: 15,
 			is_showAll: false,
 			arr_activities: [],
 			introMsg: "",
@@ -117,11 +121,20 @@ export default {
 				if (init) {
 					this.arr_activities = [];
 				}
+				const update = (id,index) => {
+					/* 获取未读 */
+					getUnuserCDKEY(id)
+					.then(res => {
+						this.arr_activities[index].unUse = res.data
+					})
+				}
 				res.data.pageData.forEach(item => {
 					item.createTime = this.gformatDate(item.createTime,true)
 					item.startTime = this.gformatDate(item.startTime)
 					item.endTime = this.gformatDate(item.endTime)
+					item.unUse = 0
 					this.arr_activities.push(item)
+					update(item.id,this.arr_activities.length-1)
 				})
 				console.log(res.data.pageData);
 			});
@@ -136,13 +149,25 @@ export default {
 				inputErrorMessage: '格式错误'
 			})
 			.then(({ value }) => {
-				getCDKEY({
-					activityId: activity.id,
-					count: value
-				})
-				.then(res => {
-					console.log(res.data);
-				})
+				if(Number(value) > activity.codeSum-activity.unUse){
+					this.$showWarn("兑换码数量不足")
+				}
+				else{
+					getCDKEY({
+						activityId: activity.id,
+						count: value
+					})
+					.then(res => {
+						this.arr_activities[this.arr_activities.indexOf(activity)].unUse += Number(value)
+						var uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(`兑换码\n${res.data.join("\n")}`)
+						var downloadLink = document.createElement("a")
+						downloadLink.href = uri
+						downloadLink.download = "兑换码.csv"
+						document.body.appendChild(downloadLink)
+						downloadLink.click()
+						document.body.removeChild(downloadLink)
+					})
+				}
 			})
 		},
 		/* 删除活动 */
@@ -172,12 +197,9 @@ export default {
 		position absolute
 		top 0
 		right 10px
-	i
-		font-size 1.4em
-	.success
-		color var(--green)
-	.none
-		color var(--gray)
+	.el-button
+		margin 5px auto
+		display block
 	.show-remind
 		margin-top 10px
 		color var(--gray)

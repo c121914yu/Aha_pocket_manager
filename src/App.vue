@@ -3,7 +3,7 @@
 		<!-- 加载 -->
 		<Loading v-if="$store.state.loading"></Loading>
 		<!-- 登录 -->
-		<router-view v-if="!$store.state.token"/>
+		<router-view v-if="!$route.meta.alone && !$store.state.token"/>
 		<!-- 主要界面 -->
 		<el-container v-else-if="$route.meta.alone">
 			<router-view/>
@@ -33,6 +33,7 @@ import { getMe } from '@/assets/axios/api_user.js'
 export default {
 	created() {
 		const token = sessionStorage.getItem("token") || ""
+		console.log(token);
 		if(token){
 			getMe()
 			.then(res => {

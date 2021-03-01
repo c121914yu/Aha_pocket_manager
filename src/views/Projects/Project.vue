@@ -91,8 +91,9 @@
 			</el-form-item>
 			<el-form-item class="check" label="审核">
 				<div class="btns">
-					<el-button type="success" @click="openCheckProject(true)">通过</el-button>
-					<el-button type="danger" @click="openCheckProject(false)">拒绝</el-button>
+					<el-button type="success" icon="el-icon-check" @click="openCheckProject(true)">通过</el-button>
+					<el-button type="danger" icon="el-icon-close" @click="openCheckProject(false)">拒绝</el-button>
+					<el-button icon="el-icon-delete" @click="deleteProject()">删除项目</el-button>
 				</div>
 			</el-form-item>
 		</el-form>
@@ -253,7 +254,7 @@
 </template>
 
 <script>
-import { getProject,putProject,getComments,removeComment,getFiles,checkFile,removeFile,getLoadSignature,checkProject } from "@/assets/axios/api_project.js"
+import { getProject,putProject,removeProject,getComments,removeComment,getFiles,checkFile,removeFile,getLoadSignature,checkProject } from "@/assets/axios/api_project.js"
 import { sendInform } from "@/assets/axios/api_message.js"
 import { getOrders } from "@/assets/axios/api_order.js"
 import EditCompetition from "@/components/EditCompetition/EditCompetition.vue"
@@ -308,7 +309,7 @@ export default{
 			})
 		},
 		awardLevel(){
-			const level = this.$store.state.prizeLevels.find(item => item.value === this.project.awardLevel)
+			const level = this.$store.state.arr_prizeLevels.find(item => item.value === this.project.awardLevel)
 			if(level){
 				return level.label
 			}
@@ -422,13 +423,26 @@ export default{
 					this.$showWarn("该项目未通过")
 				}
 				this.project.passed = this.checkRes
-				this.arr_files.forEach(file => file.passed = this.checkRes)
+				// this.arr_files.forEach(file => file.passed = this.checkRes)
 				this.inform = {
 					header: "",
 					receiver: null,
 					inform: null,
 					is_send: false
 				}
+			})
+		},
+		/* 删除项目 */
+		deleteProject()
+		{
+			this.$confirm("确认删除该项目？请谨慎操作！！",() => {
+				this.$confirm("即将删除该项目请确认！",() => {
+					removeProject(this.project.id)
+					.then(res => {
+						this.$showWarn("项目已删除")
+						this.$router.push("/admin/projects")
+					})
+				})
 			})
 		},
 		/* 获取文件信息 */

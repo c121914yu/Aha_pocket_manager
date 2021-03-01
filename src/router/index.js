@@ -13,7 +13,7 @@ import store from '@/store'
 
 const routes = [
 	{
-		path: '/',
+		path: '/admin',
 		name: 'Login',
 		meta: {
 			login: false
@@ -21,7 +21,7 @@ const routes = [
 		component: () => import('../views/Login/Login.vue')
 	},
 	{
-		path: '/datashow',
+		path: '/admin/datashow',
 		name: 'DataShow',
 		meta: {
 			login: true,
@@ -29,7 +29,7 @@ const routes = [
 		component: () => import('../views/DataShow/DataShow.vue')
 	},
 	{
-		path: '/users',
+		path: '/admin/users',
 		name: 'Users',
 		meta: {
 			login: true,
@@ -37,7 +37,7 @@ const routes = [
 		component: () => import('../views/Users/Users.vue')
 	},
 	{
-		path: '/userInfo/:id',
+		path: '/admin/userInfo/:id',
 		name: 'UserInfo',
 		meta: {
 			login: true
@@ -45,7 +45,7 @@ const routes = [
 		component: () => import('../views/Users/UserInfo.vue')
 	},
 	{
-		path: '/resume/:id',
+		path: '/admin/resume/:id',
 		name: 'Resume',
 		meta: {
 			alone: true
@@ -53,7 +53,7 @@ const routes = [
 		component: () => import('../views/Users/Resume.vue')
 	},
 	{
-		path: '/projects',
+		path: '/admin/projects',
 		name: 'Projects',
 		meta: {
 			login: true,
@@ -61,7 +61,7 @@ const routes = [
 		component: () => import('../views/Projects/Projects.vue')
 	},
 	{
-		path: '/project/:id',
+		path: '/admin/project/:id',
 		name: 'Project',
 		meta: {
 			login: true
@@ -69,7 +69,23 @@ const routes = [
 		component: () => import('../views/Projects/Project.vue')
 	},
 	{
-		path: '/orders',
+		path: '/admin/project/up',
+		name: 'UpProject',
+		meta: {
+			login: true
+		},
+		component: () => import('../views/Projects/UpProject.vue')
+	},
+	{
+		path: '/admin/project/edit/:id',
+		name: 'EditProject',
+		meta: {
+			login: true
+		},
+		component: () => import('../views/Projects/EditProject.vue')
+	},
+	{
+		path: '/admin/orders',
 		name: 'Orders',
 		meta: {
 			login: true,
@@ -77,7 +93,7 @@ const routes = [
 		component: () => import('../views/Orders/Orders.vue')
 	},
 	{
-		path: '/feedbacks',
+		path: '/admin/feedbacks',
 		name: 'Feedbacks',
 		meta: {
 			login: true,
@@ -85,7 +101,7 @@ const routes = [
 		component: () => import('../views/Feedback/Feedbacks.vue')
 	},
 	{
-		path: '/informs',
+		path: '/admin/informs',
 		name: 'Informs',
 		meta: {
 			login: true,
@@ -94,7 +110,7 @@ const routes = [
 	},
 	/* 系统相关 */
 	{
-		path: '/slidecard',
+		path: '/admin/slidecard',
 		name: 'SlideCard',
 		meta: {
 			login: true,
@@ -102,7 +118,7 @@ const routes = [
 		component: () => import('../views/System/SlideCard/SlideCard.vue')
 	},
 	{
-		path: '/activities',
+		path: '/admin/activities',
 		name: 'Activities',
 		meta: {
 			login: true,
@@ -110,7 +126,7 @@ const routes = [
 		component: () => import('../views/System/Activity/Activities.vue')
 	},
 	{
-		path: '/notice',
+		path: '/admin/notice',
 		meta: {
 			login: true,
 		},
@@ -118,7 +134,7 @@ const routes = [
 		component: () => import('../views/System/Notice/Notice.vue')
 	},
 	{
-		path: '/competitions',
+		path: '/admin/competitions',
 		name: 'Competitions',
 		meta: {
 			login: true,
@@ -126,12 +142,20 @@ const routes = [
 		component: () => import('../views/System/Competition/Competitions.vue')
 	},
 	{
-		path: '/admin',
+		path: '/admin/admin',
 		name: 'Admin',
 		meta: {
 			login: true
 		},
 		component: () => import('../views/System/Admin/Admin.vue')
+	},
+	{
+		path: '/',
+		name: 'Admin',
+		meta: {
+			login: false
+		},
+		component: () => import('../views/404.vue')
 	},
 	{
 		path: '*',
@@ -140,20 +164,25 @@ const routes = [
 ]
 
 const router = new VueRouter({
-	// mode: 'history',
+	mode: 'history',
 	base: process.env.BASE_URL,
 	routes
 })
 
 /* 路由守卫 */
 router.beforeEach((to, from, next) => {
-	if (to.meta.login && !sessionStorage.getItem("token")) {
+	if(to.meta.alone){
+		next()
+	}
+	else if (to.meta.login && !sessionStorage.getItem("token")) {
 		Vue.prototype.$showWarn("请先登录")
 		next({
 			path: "/"
 		})
-	} else
+	} 
+	else{
 		next()
+	}
 })
 
 export default router

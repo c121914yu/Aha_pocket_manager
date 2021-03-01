@@ -28,7 +28,7 @@
 			:data="users"
 			:infinite-scroll-disabled="isShowAll"
 			v-infinite-scroll="getUserData"
-			infinite-scroll-distance=30
+			infinite-scroll-distance=600
 			@sort-change="sortChange"
 			@filter-change="fileterChange">
 			<el-table-column
@@ -119,7 +119,7 @@
 				label="操作"
 				align="center">
 				<template slot-scope="scope">
-					<router-link :to="'/userinfo/' + scope.row.id">
+					<router-link :to="'/admin/userinfo/' + scope.row.id">
 						<el-button size="mini">Edit</el-button>
 					</router-link>
 				</template>
@@ -132,8 +132,8 @@
 <script>
 import { getUsers } from "@/assets/axios/api_user.js"
 export default {
-  data(){
-    return {
+	  data(){
+		return {
 			searchType: "phoneLike",
 			searchText: "",
 			sortBy: null,
@@ -145,18 +145,19 @@ export default {
 			isShowAll: false,
 			users: []
 		}
-  },
-  created() {
-  	this.getUserData(true)
-  },
-  methods: {
+	  },
+	created() {
+		this.getUserData(true,true)
+	},
+    methods: {
 		/* 
 			name: 获取用户信息
 			desc: 传入变量获取用户信息，并判断是否已经加载全部
 			time: 2020/11/29
 		*/
-		getUserData(init=false)
+		getUserData(init=false,loading=false)
 		{
+			this.$store.commit("setLoading",loading)
 			this.isShowAll = true
 			if(init){
 				this.pageNum = 1
@@ -175,19 +176,22 @@ export default {
 				if(init){
 					this.users = []
 				}
-				/* 判断是否是最后一页 */
-				if(res.data.pageData.length < this.pageSize){
-					this.isShowAll = true
-				}
-				else{
-					this.isShowAll = false
-					this.pageNum++
-				}
 				res.data.pageData.forEach(item => {
 					item.name = item.trueName || item.nickname
 					item.createdTime = this.gformatDate(item.createdTime,true)
 					this.users.push(item)
 				})
+				this.$nextTick(() => {
+					/* 判断是否是最后一页 */
+					if(res.data.pageData.length < this.pageSize){
+						this.isShowAll = true
+					}
+					else{
+						this.isShowAll = false
+						this.pageNum++
+					}
+				})
+				this.$store.commit("setLoading",false)
 				console.log(this.users);
 			})
 		},

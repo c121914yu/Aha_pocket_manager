@@ -31,7 +31,7 @@ export default {
 		/* 选择菜单 */
 		commandMenu(e) {
 			switch (e) {
-				case '0': this.$router.replace(`/userInfo/${this.myInfo.userId}`);break;
+				case '0': this.$router.replace(`/admin/userInfo/${this.myInfo.userId}`);break;
 				case '1': this.logOut();break;
 			}
 		},

@@ -33,8 +33,8 @@ export default {
 				password: [{ required: true, message: '密码不能为空' }]
 			},
 			loginFrom: {
-				phone: '15677751219',
-				password: '123456'
+				phone: '',
+				password: ''
 			}
 		};
 	},

@@ -2,11 +2,6 @@ import axios from 'axios'
 import store from "@/store"
 import Vue from 'vue'
 
-const closeLoad = () => {
-	setTimeout(() => {
-		store.commit("setLoading",false)
-	})
-}
 
 // 创建实例
 const service = axios.create({
@@ -17,7 +12,6 @@ const service = axios.create({
 // 请求拦截
 service.interceptors.request.use(req => {
 	req.headers["Authorization"] = sessionStorage.getItem("token")
-	store.commit("setLoading",true)
 	return req
 },(err) => {
 	return Promise.reject(err)
@@ -25,26 +19,25 @@ service.interceptors.request.use(req => {
 
 // 错误处理
 const error = async (err) => {
+    store.commit("setLoading",false)
 	if(err.response){
 		if(err.response.data.code === 103 || err.response.data.code === 102){
 			store.commit("logOut")
 		}
-		closeLoad()
 		Vue.prototype.$showError(err.response.data.msg)
 		return Promise.reject(err.response.data)
 	}
-	closeLoad()
 	Vue.prototype.$showError("未知错误")
 	return Promise.reject(err)
 }
 
 // 响应拦截
 service.interceptors.response.use(res => {
+	// console.log(res.headers);
 	if(res.headers.authorization){
 		store.state.token = res.headers.authorization
 		sessionStorage.setItem("token",res.headers.authorization)
 	}
-	closeLoad()
 	return res.data
 },error)
 
@@ -75,22 +68,5 @@ export function DELETE(url){
 	return service({
 		url,
 		method : "DELETE"
-	})
-}
-export function uploadFile(data){
-	let formData = new FormData()
-	formData.append("key",data.name)
-	formData.append("policy",data.policy)
-	formData.append("OSSAcccessKeyId",data.accessid)
-	formData.append("signature",data.signature)
-	formData.append("file",data.file)
-	formData.append("success_action_status","200")
-	return service({
-		url: data.host,
-		method: "POST",
-		data: formData,
-		headers: {
-			"Content-Type": "multipart/form-data"
-		}
 	})
 }

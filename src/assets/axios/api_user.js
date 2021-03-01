@@ -7,7 +7,7 @@ const AdminLogin = (data) => POST("/login/phone ",data)
 const getUsers = (params) => GET("/admin/user",params)
 /* 获取当前用户信息 */
 const getMe = () => GET("/userInfo/me",{})
-/* 获取用户详细信息 */
+/* 根据ID获取用户详细信息 */
 const getUser = (userId) => GET(`/admin/user/${userId}`,{})
 /* 获取合同签名图片 */
 const getUserContract = (userId) => GET(`/admin/user/contract/signature/${userId} `,{},"arraybuffer")

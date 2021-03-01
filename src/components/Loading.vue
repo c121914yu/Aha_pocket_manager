@@ -15,7 +15,7 @@
 
 <style lang="stylus" scoped>
 .loading
-  z-index 100
+  z-index 2000
   position fixed
   top 0
   left 0
@@ -35,8 +35,8 @@
       top calc(50% - 30px)
       width 60px
       height: 60px
-      -webkit-transform scale(0.7);
-      transform scale(0.7);
+      -webkit-transform scale(0.6);
+      transform scale(0.6);
       -webkit-animation loader-2-star 1s ease alternate infinite 
       animation loader-2-star 1s ease alternate infinite
     .loader-circles 
@@ -57,15 +57,15 @@
     -webkit-transform scale(0) rotate(0deg)
     transform: scale(0) rotate(0deg)
   100% 
-    -webkit-transform scale(0.7) rotate(360deg)
-    transform scale(0.7) rotate(360deg)
+    -webkit-transform scale(0.6) rotate(360deg)
+    transform scale(0.6) rotate(360deg)
 @keyframes loader-2-star 
   0% 
     -webkit-transform scale(0) rotate(0deg)
     transform scale(0) rotate(0deg)
   100% 
-    -webkit-transform scale(0.7) rotate(360deg)
-    transform scale(0.7) rotate(360deg)
+    -webkit-transform scale(0.6) rotate(360deg)
+    transform scale(0.6) rotate(360deg)
  @-webkit-keyframes loader-2-circles 
   0% 
     box-shadow 0 0 0 #18ffff

@@ -35,8 +35,10 @@ import {
 	Row,
 	Col,
 	Rate,
+	Progress,
 } from 'element-ui'
 Vue
+	.use(Progress)
 	.use(Rate)
 	.use(Row)
 	.use(Col)

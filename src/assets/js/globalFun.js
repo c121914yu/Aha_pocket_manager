@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import { MessageBox,Message } from "element-ui"
+import store from "@/store"
 
 Vue.prototype.$prompt = MessageBox.prompt
 
@@ -68,38 +69,49 @@ Vue.prototype.gformatDate = (time,breakLine=false) => {
 	return `${year < 10 ? '0'+year : year}/${month < 10 ? '0'+month : month}/${day < 10 ? '0'+day : day} ${hour < 10 ? '0'+hour : hour}:${minutes < 10 ? '0'+minutes : minutes}:${second < 10 ? '0'+second : second}`
 }
 
-/* 上传文件 */
-import { getPublicSign } from "@/assets/axios/api_system.js"
-Vue.prototype.gUpFile = (filename,file) => {
+/* 
+	name: gUploadFile
+	description: 上传文件至COS存储空间
+	@params file: String,文件
+	@params signature: Object,签名
+	@return: fileUrl: String,文件路径
+	time: 2020/12/30
+*/
+import axios from 'axios'
+Vue.prototype.gUploadFile = (file,signature,updateDom=null) => {
 	return new Promise((resolve,reject) => {
-		getPublicSign({filename})
-		.then(res => {
-			const signature = res.data
-			let cos
-			try{
-				cos = new COS({
-				   getAuthorization: (options, callback) => {callback({Authorization: signature.authorization})}
-				})
-			} catch(err){
-				reject(err)
-			}
-			cos.putObject({
-			   Bucket: signature.bucketName,
-			   Region: signature.region,
-			   Key: signature.filename, 
-			   StorageClass: 'STANDARD',
-			   Body: file,
-			   onProgress: (progressData) => {
-			       // console.log(JSON.stringify(progressData));
-			   }
-			}, (err, data) => {
-				if(err){
-					reject(err)
+		let formData = new FormData()
+		formData.append("key",signature.filename)
+		formData.append("policy",signature.policy)
+		formData.append("q-sign-algorithm","sha1")
+		formData.append("q-ak",signature.secretId)
+		formData.append("q-key-time",signature.keyTime)
+		formData.append("q-signature",signature.signature)
+		formData.append("file",file)
+		axios({
+			url: `https://${signature.bucketName}.cos.${signature.region}.myqcloud.com`,
+			method: "POST",
+			data: formData,
+			headers: {
+				"Content-Type": "multipart/form-data"
+			},
+			onUploadProgress: (progressEvent) => {
+				if(updateDom){
+					updateDom(Math.round(progressEvent.loaded / progressEvent.total * 100) | 0)
 				}
-				resolve(data)
-			})
+			}
+		})
+		.then(res => {
+			if(res.status === 204){
+				resolve(res.config.url + signature.filename)
+			}
+			else{
+				this.$store.commit("setLoading",false)
+				reject(res)
+			}
 		})
 		.catch(err => {
+			this.$store.commit("setLoading",false)
 			reject(err)
 		})
 	})
@@ -138,6 +150,21 @@ Vue.prototype.gGetFileUrl = (signature) => {
 			}
 		})
 	})
+}
+
+/* 选择文件，返回文件以及路径 */
+Vue.prototype.gSelectFile = (dom) => {
+	const file = dom.files[0]
+	if(/image/g.test(file.type)){
+		return{
+			file,
+			url: window.URL.createObjectURL(file)
+		}
+	}
+	else{
+		this.$showError("需为图片格式")
+		return false
+	}
 }
 
 /* 二进制文件转base64 */

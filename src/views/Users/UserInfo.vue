@@ -63,7 +63,7 @@
 			</el-form-item>
 			<!-- 用户简历 -->
 			<el-form-item label="用户简历">
-				<a class="link-resume" :href="'http://localhost:8081/resume/'+userInfo.id" target="_blank">查看用户简历</a>
+				<a class="link-resume" :href="'http://localhost:8082/resume/'+userInfo.id" target="_blank">查看用户简历</a>
 			</el-form-item>
 			<!-- 按键 -->
 			<el-form-item>

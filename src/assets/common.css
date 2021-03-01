@@ -86,6 +86,20 @@ a {
 }
 .check-file {
   cursor: pointer;
+  font-size: 12px;
+  border: 1px solid var(--boder-color1);
+  border-radius: var(--radius2);
+  display: inline-block;
+}
+.check-file div {
+  padding: 2px 5px;
+}
+.check-file:hover {
+  color: var(--blue);
+  background-color: rgba(64,158,255,0.1);
+}
+.check-file:active {
+  transform: scale(0.98);
 }
 .el-icon-circle-close {
   color: #fff;
@@ -97,18 +111,19 @@ a {
 }
 /* 全局弹窗样式 */
 .popup {
-  z-index: 10;
+  z-index: 1900;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: rgba(0,0,0,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .popup .content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   padding: 10px;
   border-radius: var(--radius2);
   background-color: #fff;

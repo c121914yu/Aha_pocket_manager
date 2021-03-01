@@ -97,12 +97,13 @@ export default {
 							/* 上传文件 */
 							if(this.file){
 								this.gUpFile(`轮播图${Date.now()}.jpg`,this.file)
-								.then(res => {
-									this.slideCard.pictureUrl = `https://${res.Location}`
+								.then(url => {
+									console.log(url);
+									this.slideCard.pictureUrl = url
 									this.updateSlide()
 								})
 								.catch(err => {
-									console.log(err);
+									console.error(err);
 									this.$showWarn("上传图片失败")
 								})
 							}

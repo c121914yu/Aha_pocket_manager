@@ -20,6 +20,8 @@ const postActivity = (data) => POST("/admin/activity",data)
 const deleteActivity = (id) => DELETE("/admin/activity/"+id,{})
 /* 生成兑换码 */
 const getCDKEY = (params) => GET("/admin/activity/code",params)
+/* 获取未兑换的兑换码数量 */
+const getUnuserCDKEY = (id) => GET(`/admin/activity/code/count?activityId=${id}`,{})
 
 export {
 	getPublicSign,
@@ -33,5 +35,6 @@ export {
 	postActivity,
 	deleteActivity,
 	
-	getCDKEY
+	getCDKEY,
+	getUnuserCDKEY
 }

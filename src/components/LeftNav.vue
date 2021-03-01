@@ -42,20 +42,20 @@ export default {
 	data(){
 		return {
 			navs1: [
-				{text: "数据统计",icon: "data-analysis",path: "/datashow",index: "1"},
-				{text: "用户管理",icon: "user",path: "/users",index: "2"},
-				{text: "项目管理",icon: "folder-opened",path: "/projects",index: "3"},
-				{text: "订单管理",icon: "tickets",path: "/orders",index: "4"},
-				{text: "用户反馈",icon: "chat-dot-square",path: "/feedbacks",index: "5"},
-				{text: "我的通知",icon: "bell",path: "/informs",index: "6"},
+				{text: "数据统计",icon: "data-analysis",path: "/admin/datashow",index: "1"},
+				{text: "用户管理",icon: "user",path: "/admin/users",index: "2"},
+				{text: "项目管理",icon: "folder-opened",path: "/admin/projects",index: "3"},
+				{text: "订单管理",icon: "tickets",path: "/admin/orders",index: "4"},
+				{text: "用户反馈",icon: "chat-dot-square",path: "/admin/feedbacks",index: "5"},
+				{text: "我的通知",icon: "bell",path: "/admin/informs",index: "6"},
 			],
 			navs2: [
 				{text: "平台管理",icon: "setting",index: "7",children: [
-					{text: "轮播图管理",icon: "data-board",path: "/slidecard",index: "7-1"},
-					{text: "活动管理",icon: "date",path: "/activities",index: "7-2"},
-					{text: "系统公告",icon: "chat-dot-round",path: "/notice",index: "7-3"},
-					{text: "竞赛信息",icon: "trophy",path: "/competitions",index: "7-4"},
-					{text: "管理员设置",icon: "setting",path: "/admin",index: "7-5"},
+					{text: "轮播图管理",icon: "data-board",path: "/admin/slidecard",index: "7-1"},
+					{text: "活动管理",icon: "date",path: "/admin/activities",index: "7-2"},
+					{text: "系统公告",icon: "chat-dot-round",path: "/admin/notice",index: "7-3"},
+					{text: "竞赛信息",icon: "trophy",path: "/admin/competitions",index: "7-4"},
+					{text: "管理员设置",icon: "setting",path: "/admin/admin",index: "7-5"},
 				]},
 			],
 			currentNav: '2'
@@ -72,7 +72,7 @@ export default {
 					this.currentNav="1";break;
 				case 'Users': case "UserInfo": case "Resume":
 					this.currentNav="2";break;
-				case "Projects": case "Project": 
+				case "Projects": case "Project": case "UpProject": case "EditProject": 
 					this.currentNav="3";break;
 				case 'Orders':
 					this.currentNav="4";break;
@@ -99,5 +99,6 @@ export default {
 
 <style lang="stylus" scoped> 
 .left-nav
-  height 100%
+	height 100%
+	overflow-x hidden
 </style>

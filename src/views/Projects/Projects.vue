@@ -39,12 +39,23 @@
 				    </el-option>
 				</el-select>
 			</div>
+			<router-link :to="{name: 'UpProject'}">
+				<el-button
+					class="add-btn" 
+					icon="el-icon-circle-plus-outline" 
+					type="primary">
+					添加项目
+				</el-button>
+			</router-link>
 		</header>
 		<el-table 
 			ref="table"
 			style="width: 100%"
 			stripe
 			:data="projects"
+			:infinite-scroll-disabled="is_loadAll"
+			v-infinite-scroll="getProjectsData"
+			infinite-scroll-distance=600
 			@sort-change="sortChange"
 			@filter-change="fileterChange">
 			<el-table-column
@@ -108,8 +119,11 @@
 				label="操作"
 				align="center">
 				<template slot-scope="scope">
-					<router-link :to="'/project/' + scope.row.id">
-						<el-button size="mini">Edit</el-button>
+					<router-link :to="'/admin/project/' + scope.row.id">
+						<el-button size="mini">审阅</el-button>
+					</router-link>
+					<router-link :to="'/admin/project/edit/' + scope.row.id">
+						<el-button style="margin-top: 5px;" type="primary" size="mini">编辑</el-button>
 					</router-link>
 				</template>
 			</el-table-column>
@@ -123,7 +137,7 @@ import { getProjects } from "@/assets/axios/api_project.js"
 import { getComps } from "@/assets/axios/api_competition.js"
 export default {
     data(){
-		const prizeLevels = this.$store.state.prizeLevels
+		const arr_prizeLevels = this.$store.state.arr_prizeLevels
 		return {
 			searchText: "",
 			searchType: "",
@@ -136,7 +150,7 @@ export default {
 			is_loadAll: false,
 			projects: [],
 			arr_competion: [],
-			prizeLevels
+			arr_prizeLevels
 		}
 	},
 	created() {
@@ -145,13 +159,13 @@ export default {
 			.then(res => {
 				this.$store.state.arr_competitions = res.data
 				this.arr_competion = res.data
-				this.getProjectsData(true)
-				console.log(this.arr_competion)
+				this.getProjectsData(true,true)
+				// console.log(this.arr_competion)
 			})
 		}
 		else{
 			this.arr_competion = this.$store.state.arr_competitions
-			this.getProjectsData(true)
+			this.getProjectsData(true,true)
 		}
 	},
 	methods: {
@@ -162,8 +176,10 @@ export default {
 			@params	awardLevel: int
 			time: 2020/12/27
 		*/
-		getProjectsData(init=false)
+		getProjectsData(init=false,loading=false)
 		{
+			this.$store.commit("setLoading",loading)
+			this.is_loadAll = true
 			if(init){
 				this.pageNum = 1
 			}
@@ -175,7 +191,6 @@ export default {
 				compId: this.filterComp || null,
 				passed: this.passed
 			}
-			console.log(parmas);
 			parmas.phone = this.searchText || null
 			getProjects(parmas)
 			.then(res => {
@@ -187,7 +202,7 @@ export default {
 					let competition = this.arr_competion.find(item => item.id === project.compId)
 					project.compName = competition ? competition.name : ""
 					/* 查找获奖等级 */
-					const level = this.prizeLevels.find(item => project.awardLevel === item.value)
+					const level = this.arr_prizeLevels.find(item => project.awardLevel === item.value)
 					project.awardLevel = level || {label: "",value: 0}
 					/* 格式化标签 */
 					if(project.tags){
@@ -195,15 +210,18 @@ export default {
 					}
 					this.projects.push(project)
 				})
+				this.$nextTick(() => {
+					/* 判断是否是最后一页 */
+					if(res.data.pageSize < this.pageSize){
+						this.is_loadAll = true
+					}
+					else{
+						this.is_loadAll = false
+						this.pageNum++
+					}
+				})
+				this.$store.commit("setLoading",false)
 				console.log(this.projects);
-				/* 判断是否是最后一页 */
-				if(res.data.pageSize < this.pageSize){
-					this.is_loadAll = true
-				}
-				else{
-					this.is_loadAll = false
-					this.pageNum++
-				}
 			})
 		},
 		/* 重置 */
@@ -259,6 +277,7 @@ export default {
 
 <style lang="stylus" scoped>
 .projects
+	position relative
 	h1
 		margin-bottom 10px
 		color var(--blue)
@@ -276,6 +295,10 @@ export default {
 				margin-right 10px
 			.el-select
 				width 490px
+		.add-btn
+			position absolute
+			top 0
+			right 10px
 	i
 		font-size 1.4em
 	.success
