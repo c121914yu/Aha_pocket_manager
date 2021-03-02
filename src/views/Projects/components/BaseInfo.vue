@@ -9,7 +9,7 @@
 				lazy
 				:preview-src-list="[baseInfo.avatarUrl]">
 			</el-image>
-			<label class="check-file">
+			<label class="select-file">
 				<div>编辑项目头像</div>
 				<input 
 					ref="avatarUrl"
@@ -72,7 +72,7 @@
 						lazy
 						:preview-src-list="[baseInfo.awardProveUrl]"
 					></el-image>
-					<label class="check-file">
+					<label class="select-file">
 						<div>选择获奖证明</div>
 						<input
 							ref="awardProveUrl"
@@ -236,7 +236,7 @@ export default{
 		flex-direction column
 		align-items center
 		justify-content center
-		.check-file
+		.select-file
 			margin 5px 0
 	.project-tags
 		.el-tag

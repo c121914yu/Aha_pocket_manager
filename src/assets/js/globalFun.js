@@ -1,11 +1,9 @@
-import Vue from 'vue'
-import { MessageBox,Message } from "element-ui"
 import store from "@/store"
 
-Vue.prototype.$prompt = MessageBox.prompt
+// Vue.prototype.$prompt = ELEMENT.MessageBox.prompt
 
 Vue.prototype.$showSuccess = (msg,duration=2000) => {
-	Message({
+	ELEMENT.Message({
 		message: msg,
 		type: 'success',
 		duration
@@ -13,7 +11,7 @@ Vue.prototype.$showSuccess = (msg,duration=2000) => {
 }
 
 Vue.prototype.$showWarn = (msg,duration=2000) => {
-	Message({
+	ELEMENT.Message({
 		message: msg,
 		type: 'warning',
 		duration
@@ -21,7 +19,7 @@ Vue.prototype.$showWarn = (msg,duration=2000) => {
 }
 
 Vue.prototype.$showError = (msg,duration=2000) => {
-	Message({
+	ELEMENT.Message({
 		message: msg,
 		type: 'error',
 		duration
@@ -29,7 +27,7 @@ Vue.prototype.$showError = (msg,duration=2000) => {
 }
 
 Vue.prototype.$confirm = (msg,success) => {
-	MessageBox.confirm(msg,"提示",{
+	ELEMENT.MessageBox.confirm(msg,"提示",{
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning'

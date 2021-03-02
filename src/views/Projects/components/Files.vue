@@ -1,7 +1,7 @@
 <!-- 文件和项目成员 -->
 <template>
 	<div v-if="projectId>0" class="filesInfo">
-		<label style="padding: 7px 15px;background-color: var(--blue);color: #FFFFFF;" class="check-file">
+		<label style="padding: 7px 15px;background-color: var(--blue);color: #FFFFFF;" class="select-file">
 			<input type="file" multiple @change="selectFile($event)">
 			<span>选取文件</span>
 		</label>

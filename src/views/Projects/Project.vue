@@ -139,8 +139,8 @@
 							</span>
 						</div>
 						<div>
-							<span class="check-file">
-								<small>状态:</small>
+							<span>
+								<small style="margin-right: 5px;">状态:</small>
 								<el-radio-group v-model="file.passed" @change="checkFileStatus($event,file,index)">
 									<el-radio :label="true">已通过</el-radio>
 									<el-radio :label="false">未通过</el-radio>
