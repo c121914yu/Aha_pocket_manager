@@ -1,7 +1,4 @@
-import axios from 'axios'
 import store from "@/store"
-import Vue from 'vue'
-
 
 // 创建实例
 const service = axios.create({

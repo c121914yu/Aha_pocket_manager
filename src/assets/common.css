@@ -84,21 +84,21 @@ a {
   margin: auto;
   text-align: center;
 }
-.check-file {
+.select-file {
   cursor: pointer;
   font-size: 12px;
   border: 1px solid var(--boder-color1);
   border-radius: var(--radius2);
   display: inline-block;
 }
-.check-file div {
+.select-file div {
   padding: 2px 5px;
 }
-.check-file:hover {
+.select-file:hover {
   color: var(--blue);
   background-color: rgba(64,158,255,0.1);
 }
-.check-file:active {
+.select-file:active {
   transform: scale(0.98);
 }
 .el-icon-circle-close {

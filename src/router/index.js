@@ -1,5 +1,3 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
 //获取原型对象上的push函数

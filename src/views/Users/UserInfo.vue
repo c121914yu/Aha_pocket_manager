@@ -370,7 +370,7 @@ export default{
 					}
 				]
 			};
-			let chart = this.Echarts.init(this.$refs.liveness)
+			let chart = echarts.init(this.$refs.liveness)
 			chart.setOption(option)
 		},
 		/* 加载订单信息 */
@@ -420,7 +420,7 @@ export default{
 		box-shadow var(--shadow1)
 		h2
 			margin-bottom 10px
-		.check-file
+		.select-file
 			margin-left calc(50% - 30px)
 			display inline-block
 		.charts
