@@ -37,4 +37,4 @@ jobs:
           SOURCE: "dist/"  
           REMOTE_HOST: "47.93.224.217"  
           REMOTE_USER: "root"   
-          TARGET: "/home/aha_website"
+          TARGET: "/home/aha_website/dist"
