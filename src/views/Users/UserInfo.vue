@@ -15,17 +15,6 @@
 			<!-- 身份 -->
 			<el-form-item label="用户身份">
 				{{userInfo.role.name}}
-				<!-- <el-select 
-					placeholder="请选择用户身份"
-					v-model="userInfo.role.name"
-					@change="setUserRole">
-				    <el-option
-				      v-for="item in arr_roles"
-				      :key="item"
-				      :label="item"
-				      :value="item">
-				    </el-option>
-				  </el-select> -->
 			</el-form-item>
 			<!-- id -->
 			<el-form-item label="userId">
@@ -98,7 +87,7 @@
 				<el-radio-group v-model="userInfo.signedContract" @change="setNotice">
 					<el-radio :label="true">已签署</el-radio>
 					<el-radio :label="false">未签署</el-radio>
-					<el-button v-if="userInfo.signedContract" size="mini">查看合同</el-button>
+					<!-- <el-button v-if="userInfo.signedContract" size="mini">查看合同</el-button> -->
 				</el-radio-group>
 			</el-form-item>
 			<!-- 合同图片 -->
@@ -222,7 +211,7 @@ export default{
 				/* 请求合同图片 */
 				this.getContract()
 				/* 实名认证信息 */
-				this.getAuthenticationInfo()
+				// this.getAuthenticationInfo()
 				/* 绘制图表 */
 				this.$nextTick(this.initLiveness)
 			})

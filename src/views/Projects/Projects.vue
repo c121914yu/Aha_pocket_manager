@@ -115,6 +115,21 @@
 					<i v-else class="none el-icon-error"></i>
 				</template>
 			</el-table-column>
+			<el-table-column
+				label="匿名项目"
+				align="center"
+				width="120"
+				:filters="[{ text: '匿名项目', value: true }, { text: '普通项目', value: false }]"
+				filter-placement="bottom-end"
+				:filter-multiple="false"
+				:filter-method="(value, project) => project.isAnonymous === value"
+				column-key="isAnonymous"
+				prop="isAnonymous">
+				<template slot-scope="scope">
+					<p v-if="scope.row.isAnonymous" style="color: var(--red);">匿名项目</p>
+					<p v-else>普通项目</p>
+				</template>
+			</el-table-column>
 			<el-table-column 
 				label="操作"
 				align="center">
@@ -122,6 +137,7 @@
 					<router-link :to="'/admin/project/' + scope.row.id">
 						<el-button size="mini">审阅</el-button>
 					</router-link>
+					<br>
 					<router-link :to="'/admin/project/edit/' + scope.row.id">
 						<el-button style="margin-top: 5px;" type="primary" size="mini">编辑</el-button>
 					</router-link>
@@ -232,7 +248,7 @@ export default {
 			this.orderBy = null
 			this.$refs.table.clearSort()
 			this.$refs.table.clearFilter()
-			this.getProjectsData(true)
+			this.getProjectsData(true,true)
 		},
 		/* 排序方式 */
 		awardLevelSort(a,b)

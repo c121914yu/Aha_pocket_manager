@@ -31,6 +31,7 @@ const routes = [
 		name: 'Users',
 		meta: {
 			login: true,
+			alive: true,
 		},
 		component: () => import('../views/Users/Users.vue')
 	},
@@ -55,6 +56,7 @@ const routes = [
 		name: 'Projects',
 		meta: {
 			login: true,
+			alive: true,
 		},
 		component: () => import('../views/Projects/Projects.vue')
 	},
@@ -140,6 +142,15 @@ const routes = [
 		component: () => import('../views/System/Competition/Competitions.vue')
 	},
 	{
+		path: '/admin/forumtags',
+		name: 'ForumTags',
+		meta: {
+			login: true,
+			alive: true,
+		},
+		component: () => import('../views/System/Forum/ForumTags.vue')
+	},
+	{
 		path: '/admin/admin',
 		name: 'Admin',
 		meta: {
@@ -149,15 +160,11 @@ const routes = [
 	},
 	{
 		path: '/',
-		name: 'Admin',
-		meta: {
-			login: false
-		},
-		component: () => import('../views/404.vue')
+		redirect: "/admin",
 	},
 	{
 		path: '*',
-		redirect: "/"
+		component: () => import('../views/404.vue')
 	},
 ]
 

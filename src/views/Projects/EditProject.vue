@@ -94,7 +94,6 @@ export default{
 						job: item.job,
 						rank: item.rank,
 						index,
-						draging: false,
 						translate: 0
 					}
 				})
@@ -105,9 +104,6 @@ export default{
 		.catch(err => {
 			this.$store.commit("setLoading",false)
 		})
-	},
-	methods:{
-		
 	}
 }
 </script>

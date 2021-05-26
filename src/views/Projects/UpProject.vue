@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { createProject } from "@/assets/axios/api_project.js"
+import { createProject,postMember } from "@/assets/axios/api_project.js"
 import BaseInfo from "./components/BaseInfo.vue"
 import IntroInfo from "./components/Intro.vue"
 export default{
@@ -24,13 +24,13 @@ export default{
 		{
 			/* 获取Intro */
 			e.intro = this.$refs.introInfo.html
+			console.log(e)
+			/* 调用API创建项目，获取到项目ID */
 			createProject(e)
 			.then(res => {
 				console.log(res);
 			})
 			this.$store.commit("setLoading",false)
-			console.log(e)
-			/* 调用API创建项目，获取到项目ID */
 			/* 创建一个项目成员 */
 			/* 跳转项目编辑界面 */
 			// this.$router.push("/project/edit/161")

@@ -70,17 +70,20 @@
 					:preview-src-list="[project.awardProveUrl]">
 				</el-image>
 			</el-form-item>
-			<el-form-item
-				:style="{
-					color: project.passed ? 'var(--green)' : 'var(--red)'
-				}" 
-				label="项目状态">
-				{{project.passed ? "已通过" : "未通过"}}
+			<el-form-item label="项目状态">
+				<span :style="{color: project.passed ? 'var(--green)' : 'var(--red)'}">
+					{{project.passed ? "已通过" : "未通过"}}
+				</span> 
+				-
+				<strong>
+					{{project.isAnonymous ? "匿名资源" : "普通资源"}}
+				</strong>
 			</el-form-item>
 			<el-form-item label="完整度">
 				<el-input
 					class="meaning" 
 					type="number" 
+					size="small"
 					placeholder="输入项目完整度" 
 					max="100"
 					min="0"
@@ -106,6 +109,7 @@
 		<el-form>
 			<h2 class="center">附件信息</h2>
 			<!-- 附件列表 -->
+			<div v-if="arr_files.length===0" class="center">无附件信息</div>
 			<div class="files">
 				<div
 					class="file"
@@ -157,6 +161,7 @@
 		<!-- 评论 -->
 		<el-form>
 			<h2 class="center">评论信息</h2>
+			<div v-if="arr_comments.length===0" class="center">无评论信息</div>
 			<div
 				class="comments" 
 				v-infinite-scroll="getCommentsInfo"
@@ -230,15 +235,88 @@
 				</el-table-column>
 			</el-table>
 		</el-form>
+		<!-- 匿名提交情况 -->
+		<el-form class="purchased-record">
+			<h2 class="center">申请认领记录</h2>
+			<el-table
+				max-height="600"
+				stripe
+				:data="arr_applyRecords"
+				v-infinite-scroll="getApplyRec"
+				infinite-scroll-distance="20"
+				:infinite-scroll-disabled="anonymousLoad.showAll"
+				@row-click="applyDetaill=$event">
+				<el-table-column
+					label="ID"
+					width="100"
+					prop="id">
+				</el-table-column>
+				<el-table-column
+					label="userID"
+					width="100"
+					prop="userId">
+				</el-table-column>
+				<el-table-column
+					label="时间"
+					width="100"
+					prop="time"
+					align="center">
+				</el-table-column>
+				<el-table-column
+					label="描述"
+					prop="intro"
+					align="center">
+				</el-table-column>
+				<el-table-column
+					label="证明材料"
+					width="140"
+					align="center">
+					<template slot-scope="scope">
+						<el-image
+							style="width: 100px;"
+							:src="scope.row.awardProveUrl"
+							fit="fill"
+							:preview-src-list="[scope.row.awardProveUrl]">
+						</el-image>
+					</template>
+				</el-table-column>
+				<el-table-column
+					label="认领状态"
+					align="center"
+					width="120"
+					:filters="[{ text: '待审核', value: 0 }, { text: '已认领', value: 1 }, { text: '认领失败', value: 2 }]"
+					filter-placement="bottom-end"
+					:filter-multiple="false"
+					:filter-method="(value, apply) => apply.state === value"
+					column-key="state"
+					prop="state">
+					<template slot-scope="scope">
+						<p v-if="scope.row.state === 0"><strong>待审核</strong></p>
+						<p style="color: var(--green);" v-else-if="scope.row.state === 1"><strong>已认领</strong></p>
+						<p style="color: var(--red);" v-else-if="scope.row.state === 2"><strong>认领失败</strong></p>
+					</template>
+				</el-table-column>
+				<el-table-column
+					label="操作"
+					width="100"
+					align="center">
+					<template slot-scope="scope">
+						<el-button type="success" size="mini" @click="openApplyCheck(true,scope.row)">同意</el-button>
+						<br>
+						<el-button style="margin-top: 5px;" type="danger" size="mini" @click="openApplyCheck(false,scope.row)">拒绝</el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+		</el-form>
 		
-		<!-- 拒绝项目，输入邮件内容 -->
+		<!-- 审核项目，输入邮件内容 -->
 		<SendInform
 			v-if="inform.is_send"
 			:header="inform.header"
 			:receiver="inform.receiver"
 			:inform="inform.inform"
 			@close="inform.is_send=false"
-			@success="check">
+			@success="successSendInform">
 		</SendInform>
 		<!-- 比赛编辑 -->
 		<EditCompetition
@@ -254,9 +332,9 @@
 </template>
 
 <script>
-import { getProject,putProject,removeProject,getComments,removeComment,getFiles,checkFile,removeFile,getLoadSignature,checkProject } from "@/assets/axios/api_project.js"
-import { sendInform } from "@/assets/axios/api_message.js"
+import { getProject,putProject,removeProject,getComments,removeComment,getFiles,checkFile,removeFile,getLoadSignature,checkProject,getApplyRecords,putApplyRecords } from "@/assets/axios/api_project.js"
 import { getOrders } from "@/assets/axios/api_order.js"
+import { sendInform } from "@/assets/axios/api_message.js"
 import EditCompetition from "@/components/EditCompetition/EditCompetition.vue"
 import SendInform from "@/components/SendInform/SendInform.vue"
 import OrderDetail from "@/components/OrderDetail/OrderDetail.vue"
@@ -268,19 +346,6 @@ export default{
 			editCompetitionInfo: null, //需要编辑比赛的信息
 			is_changeCompInfo: false, //是否需要修改该项目的比赛信息
 			meaning: 100, // 项目完整度
-			checkRes: false, // 审核结果
-			inform: {
-				header: "",
-				receiver: null,
-				inform: null,
-				is_send: false
-			},
-			is_sendInform: false,
-			filesLoad: { // 评论加载
-				pageNum: 1,
-				pageSize: 20,
-				showAll: false
-			},
 			arr_files: [],
 			commentLoad: { // 评论加载
 				pageNum: 1,
@@ -291,11 +356,24 @@ export default{
 			purcharsedLoad: {
 				pageNum: 1,
 				pageSize: 20,
-				showAll: false,
-				fileId: null,
+				showAll: false
 			},
 			arr_purchasedFile: [],
-			order: null
+			order: null, // 订单详细
+			anonymousLoad: {
+				pageNum: 1,
+				pageSize: 20,
+				showAll: false,
+			},
+			arr_applyRecords: [],
+			inform: {
+				header: "",
+				receiver: null,
+				inform: null,
+				is_send: false,
+				type: 0,
+				val: null
+			},
 		}
 	},
 	computed: {
@@ -322,6 +400,7 @@ export default{
 		OrderDetail
 	},
 	created() {
+		document.body.scrollTop = 0
 		this.getProjectInfo()
 		this.getFiles()
 	},
@@ -400,36 +479,43 @@ export default{
 				id: this.project.creatorUser.userId,
 				name: this.project.creatorUser.nickname
 			}
-			this.checkRes = bool
+			this.inform.val = bool
 			this.inform.is_send = true
+			this.inform.type = 0
+		},
+		/* 成功发送邮件，根据type调用回调 */
+		successSendInform()
+		{
+			console.log("发送完成");
+			switch(this.inform.type){
+				case 0: this.check(this.inform.val);break;
+				case 1: this.judegApply(this.inform.val);break;
+			}
+			this.inform = {
+				header: "",
+				receiver: null,
+				inform: null,
+				is_send: false,
+				type: 0,
+				val: null
+			}
 		},
 		/* 审核项目 */
-		check(e)
+		check(val)
 		{
-			sendInform({
-				...e,
-				type: 0,
-			})
-			/* 发送通知 */
 			checkProject(this.project.id,{
-				passed: this.checkRes,
+				passed: val,
 				meaning: this.meaning
 			})
 			.then(res => {
-				if(this.checkRes){
+				if(val){
 					this.$showSuccess("已通过该项目")
 				}
 				else{
 					this.$showWarn("该项目未通过")
 				}
-				this.project.passed = this.checkRes
-				// this.arr_files.forEach(file => file.passed = this.checkRes)
-				this.inform = {
-					header: "",
-					receiver: null,
-					inform: null,
-					is_send: false
-				}
+				this.project.passed = val
+				// this.arr_files.forEach(file => file.passed = val)
 			})
 		},
 		/* 删除项目 */
@@ -519,12 +605,11 @@ export default{
 					comment.filename = file.name
 					this.arr_comments.push(comment)
 				})
-				// console.log(this.arr_comments)
 			})
 		},
 		deleteComment(comment,index)
 		{
-			this.$confirm("确认删除该附件？请勿随意使用该操作！",() => {
+			this.$confirm("确认删除该评论？请勿随意使用该操作！",() => {
 				removeFile(comment.resourceId,comment.user.userId)
 				.then(res => {
 					this.$showWarn("已该评论")
@@ -533,7 +618,7 @@ export default{
 			})
 		},
 		/* 获取购买记录 */
-		getPurchased(fileId=null)
+		getPurchased()
 		{
 			this.purcharsedLoad.showAll = true
 			getOrders({
@@ -558,6 +643,98 @@ export default{
 				// console.log(this.arr_purchasedFile);
 			})
 		},
+		/* 获取匿名资源申请表 */
+		getApplyRec(init=false)
+		{
+			if(init){
+				this.anonymousLoad.pageNum = 1
+				this.arr_applyRecords = []
+			}
+			this.anonymousLoad.showAll = true
+			getApplyRecords({
+				pageNum: this.anonymousLoad.pageNum,
+				pageSize: this.anonymousLoad.pageSize,
+				projectId: this.$route.params.id,
+				order: "state"
+			})
+			.then(res => {
+				if(res.data.pageData.length < this.anonymousLoad.pageSize){
+					this.anonymousLoad.showAll = true
+				}
+				else{
+					this.anonymousLoad.pageNum++
+					this.anonymousLoad.showAll = false
+				}
+				this.arr_applyRecords = res.data.pageData.map(item => {
+					return {
+						id: item.id,
+						userId: item.userId,
+						time: this.gformatDate(item.updateTime,true),
+						intro: item.intro + "大Dg aedsgdssdgs爱的速递所是多个浮点数该是否多福多寿高度是否个讽德诵功的双方各萨法搭嘎浮点数个但是返回给浮点数试试毒工大萨嘎红色地方",
+						awardProveUrl: item.awardProveUrl,
+						state: item.state
+					}
+				})
+				console.log(this.arr_applyRecords);
+			})
+		},
+		/* 打开审核匿名提交通知 */
+		openApplyCheck(bool,record)
+		{
+			if(bool){
+				this.inform.header = "认领成功通知"
+				this.inform.inform = {
+					title: "项目认领成功",
+					content: `恭喜你,你已成功认领项目{{${this.project.name}}}`
+				}
+			}
+			else{
+				this.inform.inform = {
+					title: "项目认领失败",
+					content: `很遗憾的告诉你,你无法认领项目{{${this.project.name}}},原因如下:`
+				}
+			}
+			this.inform.receiver = {
+				id: record.userId,
+				name: record.userId
+			}
+			this.inform.val = {
+				val: bool,
+				...record
+			}
+			this.inform.is_send = true
+			this.inform.type = 1
+		},
+		/* 审核认领 */
+		judegApply(e)
+		{
+			putApplyRecords({
+				id: e.id,
+				projectId: this.project.id,
+				state: e.val ? 1 : 0
+			})
+			.then(res => {
+				if(e.val){
+					this.$showSuccess("已同意认领项目")
+					this.project.isAnonymous = false
+					// 通知其他用户认领失败
+					this.arr_applyRecords.forEach(apply => {
+						if(apply.userId !== e.userId){
+							sendInform({
+								receiverUserId: apply.userId,
+								type: 0,
+								title: "认领匿名项目失败",
+								content: `您申请认领的项目{{${this.project.name}}}已经被其他人认领，如有疑问请联系客服。`
+							})
+						}
+					})
+				}
+				else{
+					this.$showWarn("拒绝认领项目")
+				}
+				this.getApplyRec(true)
+			})
+		}
 	}
 }
 </script>
