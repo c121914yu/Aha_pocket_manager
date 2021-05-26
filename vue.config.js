@@ -1,3 +1,4 @@
+const CompressionPlugin = require("compression-webpack-plugin")
 module.exports = {
 	publicPath: "/",
 	outputDir: "dist",
@@ -13,7 +14,10 @@ module.exports = {
 			"axios": "axios",
 			"element-ui": "ELEMENT",
 			"echarts": "echarts"
-		}
+		},
+		plugins: [
+			
+		]
 	},
 	pages: {
 		index: {

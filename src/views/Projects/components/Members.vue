@@ -15,7 +15,7 @@
 			<div 
 				class="member"
 				:style="{
-					transform: `translateY(${member.translate}px)`,
+					'transform': `translateY(${member.translate}px)`,
 					'z-index': dragIndex === index ? 10 : 1
 				}"
 				v-for="(member,index) in members"
@@ -61,7 +61,8 @@ export default{
 			userId: "",
 			members: [],
 			member: null,
-			dragIndex: null
+			dragIndex: null,
+			update: false
 		}
 	},
 	components: {
@@ -71,15 +72,15 @@ export default{
 		/* 拖拽开始 */
 		dragstart(e,index)
         {
-			this.members[index].draging = true
 			this.dragIndex = index
 			dragstartY = e.pageY
 			memberPosition = index*60+30
+			this.update = false
         },
         /* 拖拽中 */
         drag(e)
         {
-			if(this.dragIndex !== null && this.members[this.dragIndex].draging){
+			if(this.dragIndex !== null){
 				this.members[this.dragIndex].translate = e.pageY - dragstartY 
 				const position = memberPosition+this.members[this.dragIndex].translate
 				this.members.forEach((member,index) => {
@@ -88,10 +89,12 @@ export default{
 						/* 在拖拽DOM下方 */
 						if(index > this.dragIndex && position > center){
 							member.translate = -60
+							this.update = true
 						}
 						/* 在拖拽DOM上方 */
 						else if(index < this.dragIndex && position < center+60){
 							member.translate = 60
+							this.update = true
 						}
 						else{
 							member.translate = 0
@@ -103,7 +106,7 @@ export default{
 		/* 拖拽结束 */
 		dragend(e)
 		{
-			if(this.dragIndex === null){
+			if(this.dragIndex === null || !this.update){
 				return
 			}
 			/* 判断拖拽DOM应在下标 */
@@ -113,7 +116,6 @@ export default{
 			temp.splice(this.dragIndex,1)
 			temp.splice(index,0,this.members[this.dragIndex])
 			this.members = temp.map((item,index) => {
-				item.draging = false
 				item.translate = 0
 				item.rank = index+1
 				return item
@@ -146,7 +148,6 @@ export default{
 							job: "",
 							index: -1,
                             rank: this.members.length,
-							draging: false
 						}
 					}
 					else{
@@ -176,7 +177,7 @@ export default{
 					member.index = this.members.length
 					this.members.push(member)
 					this.member = null
-					this.$showSuccess("修改成员信息成功")
+					this.$showSuccess("添加成员成功")
 					this.$store.commit("setLoading",false)
 				})
 			}
@@ -222,6 +223,7 @@ export default{
 <style lang="stylus" scoped>
 .memberInfo
 	.members
+		position relative
 		height 100%
 		margin-top 15px
 		border-radius var(--radius2)

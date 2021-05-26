@@ -83,7 +83,7 @@
 				</div>
 			</el-form-item>
 			<el-form-item v-if="projectId===0" label="归属用户" prop="userId">
-				<el-input placeholder="用户的ID" v-model="baseInfo.userId"></el-input>
+				<el-input placeholder="用户的ID" v-model.number="baseInfo.userId"></el-input>
 			</el-form-item>
 		</el-form>
 		<!-- 修改项目按键 -->

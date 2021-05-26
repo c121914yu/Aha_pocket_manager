@@ -170,7 +170,9 @@ export default {
 				signedNotice: this.signedNotice,
 				signedContract: this.signedContract,
 			}
-			data[this.searchType] = this.searchText
+			if(this.searchText){
+				data[this.searchType] = this.searchText
+			}
 			getUsers(data)
 			.then(res => {
 				if(init){

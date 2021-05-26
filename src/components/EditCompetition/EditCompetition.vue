@@ -1,6 +1,6 @@
 <template>
-	<div class="edit-competition">
-		<div class="content">
+	<div class="edit-competition" @click="$emit('close')">
+		<div class="content" @click.stop="">
 			<h2 class="center">{{ type === 0 ? '添加新比赛' : '比赛编辑' }}</h2>
 			<el-form ref="informForm" label-width="100px" :rules="rules" :model="competition">
 				<el-form-item label="比赛名称" prop="name">

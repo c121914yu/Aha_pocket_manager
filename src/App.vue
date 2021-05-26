@@ -17,7 +17,10 @@
 					<LeftNav></LeftNav>
 				</el-aside>
 				<el-main>
-					<router-view/>
+					<keep-alive v-if="$route.meta.alive">
+						<router-view/>
+					</keep-alive>
+					<router-view v-else/>
 				</el-main>
 			</el-container>
 		</el-container>

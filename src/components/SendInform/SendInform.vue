@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import { sendInform } from "@/assets/axios/api_message.js"
 export default{
 	props: {
 		header: {
@@ -81,10 +82,13 @@ export default{
 			this.$refs.informForm.validate((valid) => {
 				if (valid) {
 					this.$confirm(`您即将发送通知给 ${this.receiver.name},请确认！`,() => {
-						this.$emit("success",{
+						sendInform({
 							receiverUserId: this.receiver.id,
-							...this.informInfo
+							type: 0,
+							title: this.inform.title,
+							content: this.inform.content
 						})
+						this.$emit("success")
 					})
 				} 
 				else {
