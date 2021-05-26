@@ -1,23 +1,24 @@
-const CompressionPlugin = require("compression-webpack-plugin")
+const CompressionPlugin = require( "compression-webpack-plugin" )
 module.exports = {
-	publicPath: "/",
-	outputDir: "dist",
-	//打包是否生成.map文件
-	productionSourceMap: false,
-	lintOnSave: false,
-	configureWebpack: {
-		// 打包忽略文件
-		externals: {
-			"vue": "Vue",
-			"vue-router": "VueRouter",
-			"vuex": "Vuex",
-			"axios": "axios",
-			"element-ui": "ELEMENT",
-			"echarts": "echarts"
-		},
-		plugins: [
-			
-		]
+		publicPath: "/",
+		outputDir: "dist",
+		//打包是否生成.map文件
+		productionSourceMap: false,
+		lintOnSave: false,
+		configureWebpack: {
+			// 打包忽略文件
+			externals: {
+				"vue": "Vue",
+				"vue-router": "VueRouter",
+				"vuex": "Vuex",
+				"axios": "axios",
+				"element-ui": "ELEMENT",
+				"echarts": "echarts"
+			},
+			plugins: [
+
+			]
+		}
 	},
 	pages: {
 		index: {
