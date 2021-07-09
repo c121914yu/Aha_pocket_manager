@@ -69,20 +69,12 @@ const routes = [
 		component: () => import('../views/Projects/Project.vue')
 	},
 	{
-		path: '/admin/project/up',
-		name: 'UpProject',
+		path: '/admin/resource/read/:id',
+		name: 'ReadFile',
 		meta: {
 			login: true
 		},
-		component: () => import('../views/Projects/UpProject.vue')
-	},
-	{
-		path: '/admin/project/edit/:id',
-		name: 'EditProject',
-		meta: {
-			login: true
-		},
-		component: () => import('../views/Projects/EditProject.vue')
+		component: () => import('../views/Projects/ReadFile.vue')
 	},
 	{
 		path: '/admin/orders',

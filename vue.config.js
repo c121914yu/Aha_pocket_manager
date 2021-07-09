@@ -37,6 +37,7 @@ module.exports = {
 					"https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js",
 					"https://unpkg.com/cos-js-sdk-v5/dist/cos-js-sdk-v5.min.js",
 					"https://cdn.bootcdn.net/ajax/libs/echarts/5.0.1/echarts.min.js",
+					"https://aha-public-1257019972.cos.ap-shanghai.myqcloud.com/system_static/readFileSDK.js"
 				]
 			}
 		}
